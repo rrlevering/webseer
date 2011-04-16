@@ -1,0 +1,160 @@
+@CHARSET "UTF-8";
+
+* {
+	font-family: Helvetica;
+}
+
+#frontHook {
+	text-align: center;	
+}
+
+.frontDiv {
+	margin-left: auto;
+	margin-right: auto;
+	width: 1000px;
+	margin-bottom: 20px;
+}
+
+.frontDiv div.title {
+	font-weight:bold;
+	font-size:large;
+}
+
+.action {
+	color: black;
+}
+
+.viewSource {
+	background-image: url("../images/edit-small.png");
+    cursor: pointer;
+    height: 16px;
+    position: absolute;
+    right: 24px;
+    top: 4px;
+    width: 16px;
+}
+
+table.wsTable {
+	margin: 1em 1em 1em 0em;
+	background: #FAFAD2;
+	border-collapse: collapse;
+}
+
+table.wsTable tr.alternate td {
+	background: white;
+}
+
+table.wsTable th,table.wsTable td {
+	border: 1px silver solid;
+	padding: 0.2em;
+}
+
+table.wsTable th {
+	background: #EEDD82;
+	text-align: left;
+}
+
+table.wsTable caption {
+	margin-left: inherit;
+	margin-right: inherit;
+}
+
+input.wsSubmit {
+	border: 3px double #004CB2;
+	border-top-color: #99CCFF;
+	border-left-color: #99CCFF;
+	padding: 0.25em;
+	background-color: #BBDDFF;
+	color: black;
+	font-size: 75%;
+	font-weight: bold;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 10px;
+}
+
+input.wsSubmit:active {
+	border: 3px double #99CCFF;
+	border-top-color: #004CB2;
+	border-left-color: #004CB2;
+}
+
+.title {
+	font-weight: bold;
+	font-size: 1.5em;
+	margin-bottom: 1em;
+	margin-top: .5em;
+}
+
+.header {
+	font-weight: bold;
+	font-size: 1.5em;
+	text-decoration: none;
+	color: black;
+}
+
+.breadcrumb {
+	font-weight: bold;
+	font-size: .75em;
+}
+
+.breadcrumb a {
+	text-decoration: none;
+}
+
+.breadcrumb span:after {
+	content: " / ";
+}
+
+#facetcontainer {
+	border: 1px solid gray;
+	width: 97%;
+	margin-bottom: 1em;
+	padding: 10px;
+}
+
+.tabcontentiframe {
+	width: 100%;
+}
+
+body.graph {
+    width:100%;
+    height:100%;
+    background-color:#fff;
+    text-align:center;
+    overflow:hidden;
+    margin:0;
+    padding:0;
+}
+/* visualization style container */
+#infovis {
+    background-color:#fff;
+    position:relative;
+    width:800px;
+    height:500px;
+}
+
+a.graph, a.graph:link, a.graph:visited {
+    color:#343439;
+}
+/* spacetree nodes CSS class */
+.node {
+    font-size:9px;
+    font-family:Verdana, Geneva, Arial, Helvetica, sans-serif;
+    overflow:hidden;
+    text-decoration:none;
+    position:absolute;
+    text-align:center;
+    padding:4px 1px 1px 1px;
+    cursor:pointer;
+    
+    width: 177;
+    height: 14;
+}
+
+.node:hover {
+    color:#393434;
+}
+
+.hidden{
+    display:none;
+}
