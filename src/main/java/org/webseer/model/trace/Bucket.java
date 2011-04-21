@@ -4,10 +4,10 @@ import java.util.Iterator;
 
 import name.levering.ryan.util.IterableUtils;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Type;
@@ -27,7 +27,7 @@ public class Bucket {
 
 	private final Node underlyingNode;
 
-	public Bucket(NeoService service, RuntimeTransformationNode runtimeNode, TransformationNodeOutput output) {
+	public Bucket(GraphDatabaseService service, RuntimeTransformationNode runtimeNode, TransformationNodeOutput output) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(Neo4JRuntimeUtils.getNode(runtimeNode),
 				NeoRelationshipType.BUCKET_RUNTIME);
@@ -168,7 +168,7 @@ public class Bucket {
 		};
 	}
 
-	public void addItem(NeoService service, OutputGroup currentOutputGroup, Object next) {
+	public void addItem(GraphDatabaseService service, OutputGroup currentOutputGroup, Object next) {
 		DataItem item = new DataItem(service, currentOutputGroup);
 		getType().setValue(item, next);
 	}

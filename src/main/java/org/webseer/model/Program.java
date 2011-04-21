@@ -1,9 +1,9 @@
 package org.webseer.model;
 
 import org.apache.commons.lang.StringUtils;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.program.Neo4JProgramUtils;
 import org.webseer.model.program.TransformationGraph;
 
@@ -13,7 +13,7 @@ public class Program {
 
 	private final Node underlyingNode;
 
-	public Program(NeoService service, Workspace workspace, TransformationGraph graph, String name) {
+	public Program(GraphDatabaseService service, Workspace workspace, TransformationGraph graph, String name) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		if (workspace.getProgram(name) != null) {
 			throw new IllegalArgumentException("Name must be unique to the workspace");

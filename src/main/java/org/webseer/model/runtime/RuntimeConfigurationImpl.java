@@ -12,9 +12,9 @@ import java.util.Set;
 import name.levering.ryan.util.IterableUtils;
 import name.levering.ryan.util.Pair;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.webseer.model.PreviewBuffer;
 import org.webseer.model.Workspace;
 import org.webseer.model.WorkspaceBucket;
@@ -42,19 +42,19 @@ import org.webseer.transformation.PullRuntimeTransformation;
 
 public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 
-	private final NeoService service;
+	private final GraphDatabaseService service;
 	private final Workspace workspace;
 	private Map<TransformationNode, RuntimeTransformationNode> runtimeStack = new HashMap<TransformationNode, RuntimeTransformationNode>();
 	private Map<RuntimeTransformationNode, TransformationGroup> currentGroup = new HashMap<RuntimeTransformationNode, TransformationGroup>();
 	private final String sessionId;
 
-	public RuntimeConfigurationImpl(NeoService service, Workspace workspace, String username) {
+	public RuntimeConfigurationImpl(GraphDatabaseService service, Workspace workspace, String username) {
 		this.service = service;
 		this.workspace = workspace;
 		this.sessionId = username;
 	}
 
-	public NeoService getService() {
+	public GraphDatabaseService getService() {
 		return service;
 	}
 
@@ -214,7 +214,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 			}
 
 			@Override
-			public NeoService getNeoService() {
+			public GraphDatabaseService getNeoService() {
 				return service;
 			}
 
@@ -387,7 +387,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 
 		public OutputGroup getOutputGroup();
 
-		public NeoService getNeoService();
+		public GraphDatabaseService getNeoService();
 
 	}
 
@@ -395,7 +395,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 
 		public InputGroup getInputGroup();
 
-		public NeoService getNeoService();
+		public GraphDatabaseService getNeoService();
 
 	}
 
@@ -423,7 +423,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 				}
 
 				@Override
-				public NeoService getNeoService() {
+				public GraphDatabaseService getNeoService() {
 					return getService();
 				}
 
@@ -518,7 +518,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 				}
 
 				@Override
-				public NeoService getNeoService() {
+				public GraphDatabaseService getNeoService() {
 					return getService();
 				}
 

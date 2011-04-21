@@ -18,10 +18,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.InputPoint;
@@ -35,7 +35,7 @@ import org.webseer.type.TypeFactory;
 
 public class TransformationFactory {
 
-	private static Map<NeoService, TransformationFactory> SINGLETON = new HashMap<NeoService, TransformationFactory>();
+	private static Map<GraphDatabaseService, TransformationFactory> SINGLETON = new HashMap<GraphDatabaseService, TransformationFactory>();
 
 	private final Node underlyingNode;
 
@@ -57,11 +57,11 @@ public class TransformationFactory {
 				.delete();
 	}
 
-	public static TransformationFactory getTransformationFactory(NeoService service) {
+	public static TransformationFactory getTransformationFactory(GraphDatabaseService service) {
 		return getTransformationFactory(service, false);
 	}
 
-	public static TransformationFactory getTransformationFactory(NeoService service, boolean bootstrap) {
+	public static TransformationFactory getTransformationFactory(GraphDatabaseService service, boolean bootstrap) {
 		if (!SINGLETON.containsKey(service)) {
 			TransformationFactory factory = Neo4JUtils.getSingleton(service,
 					NeoRelationshipType.REFERENCE_TRANSFORMATION_FACTORY, TransformationFactory.class);
@@ -117,7 +117,7 @@ public class TransformationFactory {
 
 	private final static String BUILTIN_DIR = "org/webseer";
 
-	public Transformation getBucketTransformation(NeoService service) {
+	public Transformation getBucketTransformation(GraphDatabaseService service) {
 		if (Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.TRANSFORMATION_FACTORY_BUCKET,
 				Transformation.class) == null) {
 			Transformation trans = new Transformation(service, "Workspace Bucket");
@@ -131,7 +131,7 @@ public class TransformationFactory {
 				Transformation.class);
 	}
 
-	private void bootstrapBuiltins(NeoService service) {
+	private void bootstrapBuiltins(GraphDatabaseService service) {
 		Set<Transformation> blah = new HashSet<Transformation>();
 		for (Transformation transformation : getAllTransformations()) {
 			blah.add(transformation);
@@ -177,7 +177,7 @@ public class TransformationFactory {
 		}
 	}
 
-	private void recurBuiltins(NeoService service, File builtInDir, String packageName, Set<String> found) {
+	private void recurBuiltins(GraphDatabaseService service, File builtInDir, String packageName, Set<String> found) {
 		for (File javaFile : builtInDir.listFiles()) {
 			if (!javaFile.isDirectory()) {
 				int sepPos = javaFile.getName().lastIndexOf('.');
@@ -230,8 +230,8 @@ public class TransformationFactory {
 		}
 	}
 
-	private Transformation createTransformation(NeoService service, String qualifiedName, Reader reader, long version)
-			throws IOException {
+	private Transformation createTransformation(GraphDatabaseService service, String qualifiedName, Reader reader,
+			long version) throws IOException {
 		String code = IOUtils.toString(reader);
 		Class<?> clazz = JavaRuntimeFactory.getClass(qualifiedName, new StringReader(code));
 		if (!JavaFunction.class.isAssignableFrom(clazz)) {
@@ -323,7 +323,8 @@ public class TransformationFactory {
 		return trans;
 	}
 
-	private void generateInputPoints(NeoService service, Transformation trans, TransformationField parent, Type type) {
+	private void generateInputPoints(GraphDatabaseService service, Transformation trans, TransformationField parent,
+			Type type) {
 		// Make input points for all the subfields
 		for (org.webseer.model.meta.Field field : type.getFields()) {
 			TransformationField subField = new TransformationField(service, parent, field);
@@ -331,7 +332,8 @@ public class TransformationFactory {
 		}
 	}
 
-	private void generateOutputPoints(NeoService service, Transformation trans, TransformationField parent, Type type) {
+	private void generateOutputPoints(GraphDatabaseService service, Transformation trans, TransformationField parent,
+			Type type) {
 		// Make input points for all the subfields
 		for (org.webseer.model.meta.Field field : type.getFields()) {
 			TransformationField subField = new TransformationField(service, parent, field);

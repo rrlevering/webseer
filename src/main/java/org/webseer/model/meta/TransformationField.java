@@ -1,8 +1,8 @@
 package org.webseer.model.meta;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 
@@ -15,7 +15,7 @@ public class TransformationField {
 
 	protected final Node underlyingNode;
 
-	public TransformationField(NeoService service, TransformationField parentField, Field field) {
+	public TransformationField(GraphDatabaseService service, TransformationField parentField, Field field) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		if (parentField != null) {
 			this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(parentField),

@@ -1,7 +1,7 @@
 package org.webseer.model.program;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.WorkspaceBucket;

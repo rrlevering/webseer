@@ -5,10 +5,10 @@ import java.util.Iterator;
 
 import name.levering.ryan.util.IterableUtils;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.program.TransformationNodeInput;
 import org.webseer.model.trace.DataItem;
 import org.webseer.model.trace.Item;
@@ -24,11 +24,11 @@ import org.webseer.model.trace.Reference;
  */
 public class Neo4JUtils {
 
-	public final static Node createNode(NeoService service) {
+	public final static Node createNode(GraphDatabaseService service) {
 		return service.createNode();
 	}
 
-	public final static Node createNode(NeoService service, Class<?> type) {
+	public final static Node createNode(GraphDatabaseService service, Class<?> type) {
 		Node node = service.createNode();
 		node.setProperty("CLASS", type.getName());
 		return node;
@@ -187,7 +187,7 @@ public class Neo4JUtils {
 		return getWrapped(rel.getOtherNode(underlyingNode), clazz);
 	}
 
-	public static <T> T getSingleton(NeoService service, NeoRelationshipType edge, Class<T> clazz) {
+	public static <T> T getSingleton(GraphDatabaseService service, NeoRelationshipType edge, Class<T> clazz) {
 		Node ref = service.getReferenceNode();
 		Relationship rel = ref.getSingleRelationship(edge, Direction.OUTGOING);
 		if (rel == null) {
@@ -234,7 +234,7 @@ public class Neo4JUtils {
 		return (Long) underlyingNode.getProperty(propName, null);
 	}
 
-	public static <T> T get(NeoService service, long id, Class<T> clazz) {
+	public static <T> T get(GraphDatabaseService service, long id, Class<T> clazz) {
 		try {
 			return getWrapped(service.getNodeById(id), clazz);
 		} catch (Exception e) {
@@ -242,8 +242,8 @@ public class Neo4JUtils {
 		}
 	}
 
-	public static void addToList(NeoService service, Node underlyingNode, Node nodeToAdd, NeoRelationshipType first,
-			NeoRelationshipType last, NeoRelationshipType item) {
+	public static void addToList(GraphDatabaseService service, Node underlyingNode, Node nodeToAdd,
+			NeoRelationshipType first, NeoRelationshipType last, NeoRelationshipType item) {
 		Node listNode = Neo4JUtils.createNode(service);
 		listNode.createRelationshipTo(nodeToAdd, item);
 

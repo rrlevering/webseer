@@ -7,10 +7,10 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.io.FileUtils;
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.webseer.model.PreviewBuffer;
 import org.webseer.model.User;
 import org.webseer.model.UserFactory;
@@ -77,7 +77,7 @@ public class WebseerTests extends TestCase {
 
 	public void testAddTransformation() throws Exception {
 
-		EmbeddedNeo neo = setupEmptyDB();
+		EmbeddedGraphDatabase neo = setupEmptyDB();
 
 		// Setup
 		Transaction tran = neo.beginTx();
@@ -132,7 +132,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testSimpleRun() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -163,7 +163,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testSimpleFill() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -203,7 +203,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testTwoStepFill() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -251,7 +251,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testTwoStepPreview() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		long count, afterCount;
 		Transaction tran = neo.beginTx();
@@ -285,7 +285,7 @@ public class WebseerTests extends TestCase {
 			// Create this first so it's not in the count
 			WorkspaceBucket previewBucket = getPreviewBucket(neo);
 
-			count = neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(Node.class);
+			count = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
 
 			// Run the graph
 			RuntimeConfiguration config = getRuntime(neo);
@@ -305,13 +305,13 @@ public class WebseerTests extends TestCase {
 			tran.finish();
 		}
 
-		afterCount = neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(Node.class);
+		afterCount = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
 
 		assertEquals("Should not have extra references after all the items from the run are deleted", count, afterCount);
 	}
 
 	public void testTwoStepCastingFill() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -359,7 +359,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testMultiRun() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -397,7 +397,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testMultiFill() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -447,7 +447,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testMultiTwoStepFill() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -508,7 +508,7 @@ public class WebseerTests extends TestCase {
 	 * Tests a bucket pulling from a previous bucket directly.
 	 */
 	public void testChainBucket() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -567,7 +567,7 @@ public class WebseerTests extends TestCase {
 	}
 
 	public void testDeletingBucket() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		long count, afterCount;
@@ -590,7 +590,7 @@ public class WebseerTests extends TestCase {
 			output.addOutgoingEdge(neo, bucketNode.getInputs().iterator().next());
 
 			// Save the node count...after we do the fill and then delete, we should have no extra references
-			count = neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(Node.class);
+			count = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
 
 			// Run the graph
 			RuntimeConfiguration config = getRuntime(neo);
@@ -661,13 +661,13 @@ public class WebseerTests extends TestCase {
 			tran.finish();
 		}
 
-		afterCount = neo.getConfig().getNeoModule().getNodeManager().getNumberOfIdsInUse(Node.class);
+		afterCount = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
 
 		assertEquals("Should not have extra references after all the items from the run are deleted", count, afterCount);
 	}
 
 	public void testMultipleOutputs() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -712,7 +712,7 @@ public class WebseerTests extends TestCase {
 	 * Feeds multiples into an aggregate input that counts the number fed in.
 	 */
 	public void testAggregateInput() throws Exception {
-		EmbeddedNeo neo = setupTestDB();
+		EmbeddedGraphDatabase neo = setupTestDB();
 
 		Transaction tran = neo.beginTx();
 		try {
@@ -754,11 +754,11 @@ public class WebseerTests extends TestCase {
 		}
 	}
 
-	static EmbeddedNeo setupEmptyDB() {
-		return new EmbeddedNeo("testDomain");
+	static EmbeddedGraphDatabase setupEmptyDB() {
+		return new EmbeddedGraphDatabase("testDomain");
 	}
 
-	static WorkspaceBucket getBucket(NeoService service, String name) {
+	static WorkspaceBucket getBucket(GraphDatabaseService service, String name) {
 		Workspace workspace = WorkspaceFactory.getWorkspaceFactory(service).getWorkspace("test");
 		if (workspace.getWorkspaceBucket(name) == null) {
 			new WorkspaceBucket(service, workspace, name);
@@ -766,17 +766,17 @@ public class WebseerTests extends TestCase {
 		return workspace.getWorkspaceBucket(name);
 	}
 
-	static WorkspaceBucket getPreviewBucket(NeoService service) {
+	static WorkspaceBucket getPreviewBucket(GraphDatabaseService service) {
 		return PreviewBuffer.getPreviewBuffer(service).getPreviewBucket(service, "test");
 	}
 
-	static RuntimeConfiguration getRuntime(NeoService service) {
+	static RuntimeConfiguration getRuntime(GraphDatabaseService service) {
 		Workspace workspace = WorkspaceFactory.getWorkspaceFactory(service).getWorkspace("test");
 		return new RuntimeConfigurationImpl(service, workspace, "test");
 	}
 
-	static EmbeddedNeo setupTestDB() {
-		EmbeddedNeo neo = setupEmptyDB();
+	static EmbeddedGraphDatabase setupTestDB() {
+		EmbeddedGraphDatabase neo = setupEmptyDB();
 
 		Transaction tran = neo.beginTx();
 		try {

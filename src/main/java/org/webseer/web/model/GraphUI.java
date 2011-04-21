@@ -1,7 +1,7 @@
 package org.webseer.web.model;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 
 public class GraphUI {
@@ -12,7 +12,7 @@ public class GraphUI {
 
 	private final Node underlyingNode;
 
-	public GraphUI(NeoService service, WebEnhancedTransformationGraph graph) {
+	public GraphUI(GraphDatabaseService service, WebEnhancedTransformationGraph graph) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		graph.getUnderlyingNode().createRelationshipTo(this.underlyingNode, WebRelationshipType.GRAPH_UI);
 	}

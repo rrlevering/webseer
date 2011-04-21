@@ -1,9 +1,10 @@
 package org.webseer.model;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.util.index.IndexService;
-import org.neo4j.util.index.LuceneIndexService;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.IndexManager;
 
 public class UserFactory {
 
@@ -13,7 +14,7 @@ public class UserFactory {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public static UserFactory getUserFactory(NeoService service) {
+	public static UserFactory getUserFactory(GraphDatabaseService service) {
 		return Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_USERFACTORY, UserFactory.class);
 	}
 
@@ -21,21 +22,24 @@ public class UserFactory {
 		return this.underlyingNode;
 	}
 
-	void registerUser(User user, NeoService service) {
-		IndexService index = new LuceneIndexService(service);
-		index.index(user.getUnderlyingNode(), "login", user.getLogin());
+	void registerUser(User user, GraphDatabaseService service) {
+		IndexManager indexManager = service.index();
+		Index<Node> index = indexManager.forNodes("users");
+		index.add(user.getUnderlyingNode(), "login", user.getLogin());
 	}
 
-	public User getUser(String login, NeoService service) {
-		IndexService index = new LuceneIndexService(service);
-		Node userNode = index.getSingleNode("login", login);
+	public User getUser(String login, GraphDatabaseService service) {
+		IndexManager indexManager = service.index();
+		Index<Node> index = indexManager.forNodes("users");
+		IndexHits<Node> hits = index.get("login", login);
+		Node userNode = hits.getSingle();
 		if (userNode == null) {
 			return null;
 		}
 		return Neo4JUtils.getWrapped(userNode, User.class);
 	}
 
-	public User getUser(String userid, String password, NeoService service) {
+	public User getUser(String userid, String password, GraphDatabaseService service) {
 		User match = getUser(userid, service);
 		if (match == null) {
 			return null;

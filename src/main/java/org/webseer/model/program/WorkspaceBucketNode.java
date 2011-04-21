@@ -1,7 +1,7 @@
 package org.webseer.model.program;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.WorkspaceBucket;
@@ -14,7 +14,7 @@ import org.webseer.transformation.TransformationFactory;
  */
 public class WorkspaceBucketNode extends TransformationNode {
 
-	public WorkspaceBucketNode(NeoService service, TransformationGraph graph, WorkspaceBucket bucket) {
+	public WorkspaceBucketNode(GraphDatabaseService service, TransformationGraph graph, WorkspaceBucket bucket) {
 		super(service, TransformationFactory.getTransformationFactory(service).getBucketTransformation(service), graph);
 		this.underlyingNode.createRelationshipTo(Neo4JUtils.getNode(bucket),
 				NeoRelationshipType.WORKSPACEBUCKETNODE_WORKSPACEBUCKET);

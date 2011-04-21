@@ -8,8 +8,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.Workspace;
 import org.webseer.model.meta.TransformationException;
@@ -31,7 +31,7 @@ public class RenderNode extends WorkspaceServlet {
 		int nodeId = Integer.parseInt(nodeIdString);
 		TransformationNode node = Neo4JUtils.get(getNeoService(), nodeId, TransformationNode.class);
 
-		NeoService service = getNeoService();
+		GraphDatabaseService service = getNeoService();
 
 		RuntimeConfiguration config = new WebConfigurationImpl(req, resp, workspace, getCurrentUser(req).getLogin(),
 				getServletContext().getRealPath(""), service, isUser(workspace.getOwner(), req), null);

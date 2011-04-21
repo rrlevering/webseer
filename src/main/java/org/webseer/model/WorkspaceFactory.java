@@ -1,7 +1,7 @@
 package org.webseer.model;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 
 public class WorkspaceFactory {
 
@@ -11,7 +11,7 @@ public class WorkspaceFactory {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public static WorkspaceFactory getWorkspaceFactory(NeoService service) {
+	public static WorkspaceFactory getWorkspaceFactory(GraphDatabaseService service) {
 		return Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_WORKSPACEFACTORY, WorkspaceFactory.class);
 	}
 

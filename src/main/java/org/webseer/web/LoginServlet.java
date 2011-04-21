@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.neo4j.api.core.NeoService;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.webseer.model.User;
 import org.webseer.model.UserFactory;
 import org.webseer.web.beans.UserBean;
@@ -22,7 +22,7 @@ public class LoginServlet extends SeerServlet {
 		if (request.getParameter("userid") != null) {
 			String userid = request.getParameter("userid");
 			String password = request.getParameter("password");
-			NeoService service = getNeoService();
+			GraphDatabaseService service = getNeoService();
 
 			UserFactory factory = UserFactory.getUserFactory(service);
 			User user = factory.getUser(userid, UserServlet.encode(password), service);

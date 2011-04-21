@@ -12,8 +12,8 @@
 <c:if test="${user != null }">
 <script language="JavaScript">
 	function newWorkspace() {
-		var createDiv = dojo.byId("createDiv");
-		createDiv.innerHTML = '<input type="text" id="workspaceName" name="workspaceName" value="New Workspace" /><input type="button" onclick="validateWorkspace()" value="Create Workspace" />';
+		var createDiv = $("#createDiv");
+		createDiv.html('<input type="text" id="workspaceName" name="workspaceName" value="New Workspace" /><input type="button" onclick="validateWorkspace()" value="Create Workspace" />');
 	}
 
 	function validateWorkspace() {

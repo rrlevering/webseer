@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
-import org.neo4j.api.core.RelationshipType;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.Program;
@@ -20,7 +20,7 @@ public class TransformationGraph {
 
 	private final Node underlyingNode;
 
-	public TransformationGraph(NeoService service) {
+	public TransformationGraph(GraphDatabaseService service) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 	}
 
@@ -40,7 +40,7 @@ public class TransformationGraph {
 		return this.underlyingNode;
 	}
 
-	public static TransformationNode createRuntimeGraph(NeoService service, TransformationNode node,
+	public static TransformationNode createRuntimeGraph(GraphDatabaseService service, TransformationNode node,
 			Map<Node, Node> converted) {
 		if (converted.containsKey(node.getUnderlyingNode())) {
 			return new TransformationNode(converted.get(node.getUnderlyingNode()));
@@ -69,7 +69,7 @@ public class TransformationGraph {
 		return newNode;
 	}
 
-	public static TransformationEdge createRuntimeGraph(NeoService service, TransformationEdge edge,
+	public static TransformationEdge createRuntimeGraph(GraphDatabaseService service, TransformationEdge edge,
 			TransformationNode target, String targetInput, Map<Node, Node> converted) {
 		TransformationNode source = createRuntimeGraph(service, edge.getOutput().getTransformationNode(), converted);
 		TransformationEdge newEdge = new TransformationEdge(service, source.getOutput(edge.getOutput().getOutputField()
@@ -100,7 +100,7 @@ public class TransformationGraph {
 	 * A clone just clones the program structure of the graph (the nodes, inputs, and outputs). The meta level is left
 	 * alone and there is no runtime or trace level yet.
 	 */
-	public static <T> T clone(NeoService service, Node startNode, Class<T> nodeClass, boolean link) {
+	public static <T> T clone(GraphDatabaseService service, Node startNode, Class<T> nodeClass, boolean link) {
 		Transaction tran = service.beginTx();
 
 		try {
@@ -120,12 +120,12 @@ public class TransformationGraph {
 		}
 	}
 
-	private static Node recursiveCopy(NeoService service, Node nodeToCopy,
+	private static Node recursiveCopy(GraphDatabaseService service, Node nodeToCopy,
 			List<? extends RelationshipType> edgesToFollow, boolean link) {
 		return recursiveCopy(service, nodeToCopy, edgesToFollow, new HashMap<Node, Node>(), link);
 	}
 
-	private static Node recursiveCopy(NeoService service, Node nodeToCopy,
+	private static Node recursiveCopy(GraphDatabaseService service, Node nodeToCopy,
 			List<? extends RelationshipType> edgesToFollow, Map<Node, Node> oldToNew, boolean link) {
 		Node newNode = copyNodeAndProperties(service, nodeToCopy);
 		oldToNew.put(nodeToCopy, newNode);
@@ -160,7 +160,7 @@ public class TransformationGraph {
 		return newNode;
 	}
 
-	private static Node copyNodeAndProperties(NeoService service, Node nodeToCopy) {
+	private static Node copyNodeAndProperties(GraphDatabaseService service, Node nodeToCopy) {
 		Node copyNode = Neo4JUtils.createNode(service);
 		for (String property : nodeToCopy.getPropertyKeys()) {
 			copyNode.setProperty(property, nodeToCopy.getProperty(property));
@@ -175,7 +175,7 @@ public class TransformationGraph {
 		return underlyingNode.getId();
 	}
 
-	public static TransformationGraph get(NeoService service, long id) {
+	public static TransformationGraph get(GraphDatabaseService service, long id) {
 		return wrap(service.getNodeById(id));
 	}
 

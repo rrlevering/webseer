@@ -3,9 +3,9 @@ package org.webseer.model.program;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.InputPoint;
@@ -23,14 +23,14 @@ public class TransformationNodeInput implements Item, HasValue {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public TransformationNodeInput(NeoService service, TransformationNode node, InputPoint inputPoint) {
+	public TransformationNodeInput(GraphDatabaseService service, TransformationNode node, InputPoint inputPoint) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(node.getUnderlyingNode(), NeoRelationshipType.NODE_NODEINPUT);
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(inputPoint),
 				NeoRelationshipType.NODEINPUT_FIELD);
 	}
 
-	public TransformationNodeInput(NeoService service, TransformationNode node, TransformationNodeInput input) {
+	public TransformationNodeInput(GraphDatabaseService service, TransformationNode node, TransformationNodeInput input) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(node.getUnderlyingNode(), NeoRelationshipType.NODE_NODEINPUT);
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(input.getInputField()),

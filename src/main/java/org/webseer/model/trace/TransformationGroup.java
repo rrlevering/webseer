@@ -2,10 +2,10 @@ package org.webseer.model.trace;
 
 import name.levering.ryan.util.IterableUtils;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.program.TransformationNodeInput;
@@ -20,7 +20,7 @@ public class TransformationGroup {
 
 	private final Node underlyingNode;
 
-	public TransformationGroup(NeoService service, RuntimeTransformationNode node) {
+	public TransformationGroup(GraphDatabaseService service, RuntimeTransformationNode node) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(Neo4JRuntimeUtils.getNode(node), NeoRelationshipType.GROUP_NODE);
 	}
@@ -90,11 +90,11 @@ public class TransformationGroup {
 		return underlyingNode.getId();
 	}
 
-	public static TransformationGroup get(NeoService service, long transformationNodeId) {
+	public static TransformationGroup get(GraphDatabaseService service, long transformationNodeId) {
 		return new TransformationGroup(service.getNodeById(transformationNodeId));
 	}
 
-	public InputGroup getInputGroup(NeoService service, TransformationNodeInput input) {
+	public InputGroup getInputGroup(GraphDatabaseService service, TransformationNodeInput input) {
 		for (InputGroup iGroup : getInputGroups()) {
 			if (iGroup.getInputQueue().getInput().equals(input)) {
 				return iGroup;
@@ -103,7 +103,7 @@ public class TransformationGroup {
 		return new InputGroup(service, getRuntimeNode().getQueue(input.getInputField().getName()), this);
 	}
 
-	public OutputGroup getOutputGroup(NeoService service, Bucket bucket) {
+	public OutputGroup getOutputGroup(GraphDatabaseService service, Bucket bucket) {
 		for (OutputGroup oGroup : getOutputGroups()) {
 			if (oGroup.getBucket().equals(bucket)) {
 				return oGroup;

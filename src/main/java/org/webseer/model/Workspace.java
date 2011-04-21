@@ -2,9 +2,9 @@ package org.webseer.model;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 
 public class Workspace {
 
@@ -13,7 +13,7 @@ public class Workspace {
 
 	private final Node underlyingNode;
 
-	public Workspace(NeoService service, WorkspaceFactory factory, User owner, String name) {
+	public Workspace(GraphDatabaseService service, WorkspaceFactory factory, User owner, String name) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		if (factory.getWorkspace(name) != null) {
 			throw new IllegalArgumentException("Name must be unique to the system");

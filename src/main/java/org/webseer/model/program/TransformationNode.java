@@ -1,8 +1,8 @@
 package org.webseer.model.program;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.InputPoint;
@@ -24,7 +24,7 @@ public class TransformationNode {
 		assert underlyingNode.hasRelationship(NeoRelationshipType.NODE_TRANSFORMATION);
 	}
 
-	public TransformationNode(NeoService service, TransformationNode node) {
+	public TransformationNode(GraphDatabaseService service, TransformationNode node) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(node.getTransformation()),
@@ -38,7 +38,7 @@ public class TransformationNode {
 		}
 	}
 
-	public TransformationNode(NeoService service, Transformation transformation, TransformationGraph graph) {
+	public TransformationNode(GraphDatabaseService service, Transformation transformation, TransformationGraph graph) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		if (transformation != null) {
 			this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(transformation),

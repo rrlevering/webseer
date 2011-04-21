@@ -3,9 +3,9 @@ package org.webseer.model.program;
 import java.util.Iterator;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
@@ -20,14 +20,16 @@ public class TransformationNodeOutput {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public TransformationNodeOutput(NeoService service, TransformationNode node, TransformationField outputPoint) {
+	public TransformationNodeOutput(GraphDatabaseService service, TransformationNode node,
+			TransformationField outputPoint) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(node.getUnderlyingNode(), NeoRelationshipType.NODE_NODEOUTPUT);
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(outputPoint),
 				NeoRelationshipType.NODEOUTPUT_FIELD);
 	}
 
-	public TransformationNodeOutput(NeoService service, TransformationNode node, TransformationNodeOutput output) {
+	public TransformationNodeOutput(GraphDatabaseService service, TransformationNode node,
+			TransformationNodeOutput output) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(node.getUnderlyingNode(), NeoRelationshipType.NODE_NODEOUTPUT);
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(output.getOutputField()),
@@ -42,7 +44,7 @@ public class TransformationNodeOutput {
 		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.NODE_NODEOUTPUT, TransformationNode.class);
 	}
 
-	public TransformationEdge addOutgoingEdge(NeoService service, TransformationNodeInput input) {
+	public TransformationEdge addOutgoingEdge(GraphDatabaseService service, TransformationNodeInput input) {
 		return new TransformationEdge(service, this, input);
 	}
 

@@ -5,10 +5,10 @@ import java.util.List;
 import name.levering.ryan.util.IterableUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils.NodeReader;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.Type;
@@ -31,7 +31,7 @@ public class WorkspaceBucket {
 
 	private final Node underlyingNode;
 
-	public WorkspaceBucket(NeoService service, Workspace workspace, String name) {
+	public WorkspaceBucket(GraphDatabaseService service, Workspace workspace, String name) {
 		if (workspace != null) {
 			if (workspace.getWorkspaceBucket(name) != null) {
 				throw new IllegalArgumentException("Name must be unique to workspace");
@@ -48,7 +48,7 @@ public class WorkspaceBucket {
 		}
 	}
 
-	public WorkspaceBucket(NeoService service, PreviewBuffer buffer) {
+	public WorkspaceBucket(GraphDatabaseService service, PreviewBuffer buffer) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		underlyingNode.createRelationshipTo(buffer.getUnderlyingNode(), NeoRelationshipType.WORKSPACEBUCKET_WORKSPACE);
 		underlyingNode.setProperty(NAME, "PREVIEW");
@@ -89,7 +89,7 @@ public class WorkspaceBucket {
 		return this.underlyingNode;
 	}
 
-	public void addBucketItem(NeoService service, ItemView item) {
+	public void addBucketItem(GraphDatabaseService service, ItemView item) {
 		// If this is the first item in the bucket, set the type
 		if (!underlyingNode.hasRelationship(NeoRelationshipType.WORKSPACEBUCKET_FIRST, Direction.OUTGOING)) {
 			setType(item.getType());

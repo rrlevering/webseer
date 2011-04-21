@@ -9,7 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.neo4j.api.core.NeoService;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.webseer.model.User;
 import org.webseer.model.UserFactory;
 import org.webseer.web.beans.UserBean;
@@ -25,7 +25,7 @@ public class UserServlet extends SeerServlet {
 
 		String action = request.getParameter("action");
 		if (action != null) {
-			NeoService service = getNeoService();
+			GraphDatabaseService service = getNeoService();
 			UserFactory factory = UserFactory.getUserFactory(service);
 			if (action.equals("delete")) {
 				// TODO: Not implemented yet

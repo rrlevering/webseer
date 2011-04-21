@@ -3,10 +3,10 @@ package org.webseer.model.trace;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Type;
@@ -15,7 +15,7 @@ public class DataItem implements Item, HasValue {
 
 	private final Node underlyingNode;
 
-	public DataItem(NeoService service, OutputGroup outputGroup) {
+	public DataItem(GraphDatabaseService service, OutputGroup outputGroup) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(outputGroup.getUnderlyingNode(), NeoRelationshipType.ITEM_OUTPUTGROUP);
 		outputGroup.getBucket().addItem(this);

@@ -2,7 +2,7 @@ package org.webseer.model.runtime;
 
 import java.util.Iterator;
 
-import org.neo4j.api.core.NeoService;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.program.TransformationEdge;
 import org.webseer.model.program.TransformationNode;
@@ -15,7 +15,7 @@ import org.webseer.transformation.InputReader;
 
 public interface RuntimeConfiguration {
 
-	public NeoService getService();
+	public GraphDatabaseService getService();
 
 	public RuntimeTransformationNode getCurrentNode(TransformationNode node);
 

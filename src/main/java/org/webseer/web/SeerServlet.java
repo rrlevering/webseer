@@ -8,9 +8,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.neo4j.api.core.EmbeddedNeo;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.webseer.model.User;
 import org.webseer.util.WebseerConfiguration;
 import org.webseer.web.beans.UserBean;
@@ -19,10 +19,10 @@ public abstract class SeerServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	public NeoService getNeoService() {
-		NeoService service = (NeoService) getServletContext().getAttribute("neoService");
+	public GraphDatabaseService getNeoService() {
+		GraphDatabaseService service = (GraphDatabaseService) getServletContext().getAttribute("neoService");
 		if (service == null) {
-			service = new EmbeddedNeo(new File(WebseerConfiguration.getWebseerRoot(), WebseerConfiguration
+			service = new EmbeddedGraphDatabase(new File(WebseerConfiguration.getWebseerRoot(), WebseerConfiguration
 					.getConfiguration().getString("WEBSEER_DB_DIR")).getAbsolutePath());
 			getServletContext().setAttribute("neoService", service);
 		}
@@ -66,7 +66,7 @@ public abstract class SeerServlet extends HttpServlet {
 
 	protected void nontransactionalizedService(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		NeoService service = getNeoService();
+		GraphDatabaseService service = getNeoService();
 		Transaction tran = service.beginTx();
 		try {
 			transactionalizedService(req, resp);

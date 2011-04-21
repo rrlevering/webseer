@@ -6,23 +6,5 @@
 	<c:otherwise>Logged in as: <a href="<c:url value="/user" />">${user.name}</a> | <a href="<c:url value="/logout" />" />logout</a></c:otherwise></c:choose></td></tr></table>
 </td></tr>
 </table>
-<script type="text/javascript">
-function resizeIframe() {
-    var windowHeight = window.innerHeight;
-
-    var container = document.getElementById('facetcontainer');
-    var bottomRow = document.getElementById('bottomRow');
-    var titleDiv = document.getElementById('titleDiv');
-    var headerDiv = document.getElementById('headerDiv');
-    var workspaceTabs = document.getElementById('tabs');
-    var containerHeight = windowHeight - (25 + bottomRow.clientHeight + (container.offsetTop) + workspaceTabs.clientHeight);
-
-    container.style.height = containerHeight + "px";
-};
-
-$(resizeIframe());
-
-window.onresize = resizeIframe;
-</script>
 </body>
 </html>

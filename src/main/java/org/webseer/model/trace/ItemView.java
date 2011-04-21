@@ -1,9 +1,9 @@
 package org.webseer.model.trace;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Type;
@@ -16,7 +16,7 @@ public class ItemView {
 
 	private final Node underlyingNode;
 
-	public ItemView(NeoService service, Item scope, Item data, String field, InputGroup group) {
+	public ItemView(GraphDatabaseService service, Item scope, Item data, String field, InputGroup group) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 
 		if (scope != null) { // scope can be null for config values

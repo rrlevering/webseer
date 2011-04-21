@@ -21,10 +21,10 @@ import name.levering.ryan.util.HashBiMap;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
@@ -66,7 +66,7 @@ public class TypeFactory {
 		this.underlyingNode = underlyingNode;
 	}
 
-	private void bootstrapPrimitives(NeoService service) {
+	private void bootstrapPrimitives(GraphDatabaseService service) {
 		for (String primitive : PRIMITIVE_TYPES) {
 			if (getType(primitive) == null) {
 				addType(new Type(service, primitive));
@@ -219,11 +219,11 @@ public class TypeFactory {
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(type), NeoRelationshipType.TYPE_FACTORY_TYPE);
 	}
 
-	public static TypeFactory getTypeFactory(NeoService service) {
+	public static TypeFactory getTypeFactory(GraphDatabaseService service) {
 		return getTypeFactory(service, false);
 	}
 
-	public static TypeFactory getTypeFactory(NeoService service, boolean bootstrap) {
+	public static TypeFactory getTypeFactory(GraphDatabaseService service, boolean bootstrap) {
 		TypeFactory factory = Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_TYPE_FACTORY,
 				TypeFactory.class);
 		factory.bootstrapPrimitives(service);
@@ -284,7 +284,7 @@ public class TypeFactory {
 
 	private final static String BUILTIN_DIR = "org/webseer";
 
-	public void bootstrapBuiltins(NeoService service) {
+	public void bootstrapBuiltins(GraphDatabaseService service) {
 		// Add/update all the builtin webseer transformations
 		Transaction tran = service.beginTx();
 		try {
@@ -334,7 +334,7 @@ public class TypeFactory {
 		return null;
 	}
 
-	private void recurBuiltins(NeoService service, File builtInDir, String packageName, Set<String> found) {
+	private void recurBuiltins(GraphDatabaseService service, File builtInDir, String packageName, Set<String> found) {
 		for (File javaFile : builtInDir.listFiles()) {
 			if (!javaFile.isDirectory()) {
 				int sepPos = javaFile.getName().lastIndexOf('.');
@@ -386,7 +386,8 @@ public class TypeFactory {
 		}
 	}
 
-	private Type createType(NeoService service, String qualifiedName, Reader reader, long version) throws IOException {
+	private Type createType(GraphDatabaseService service, String qualifiedName, Reader reader, long version)
+			throws IOException {
 		String code = IOUtils.toString(reader);
 		Class<?> clazz = JavaRuntimeFactory.getClass(qualifiedName, new StringReader(code));
 		if (clazz.getAnnotation(org.webseer.type.Type.class) == null) {

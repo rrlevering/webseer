@@ -1,6 +1,6 @@
 package org.webseer.model.trace;
 
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
 
 public interface Item extends Data {
 

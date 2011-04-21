@@ -1,9 +1,9 @@
 package org.webseer.model;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.DynamicRelationshipType;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 
 /**
  * This is used to keep track of all the preview buckets so they can be cleaned up. We hold each transformation edge
@@ -17,7 +17,7 @@ public class PreviewBuffer {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public static PreviewBuffer getPreviewBuffer(NeoService service) {
+	public static PreviewBuffer getPreviewBuffer(GraphDatabaseService service) {
 		return Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_PREVIEW, PreviewBuffer.class);
 	}
 
@@ -25,7 +25,7 @@ public class PreviewBuffer {
 		return this.underlyingNode;
 	}
 
-	public WorkspaceBucket getPreviewBucket(NeoService service, String sessionId) {
+	public WorkspaceBucket getPreviewBucket(GraphDatabaseService service, String sessionId) {
 		if (!underlyingNode.hasRelationship(DynamicRelationshipType.withName(sessionId), Direction.OUTGOING)) {
 			WorkspaceBucket bucket = new WorkspaceBucket(service, this);
 			underlyingNode

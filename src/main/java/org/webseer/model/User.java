@@ -1,8 +1,8 @@
 package org.webseer.model;
 
 import org.apache.commons.lang.StringUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 
 public class User {
 
@@ -11,9 +11,9 @@ public class User {
 	private static final String PASSWORD = "password";
 	private static final String EMAIL = "email";
 
-	private final Node underlyingNode;
+	private final org.neo4j.graphdb.Node underlyingNode;
 
-	public User(NeoService service, UserFactory factory, String login, String password) {
+	public User(GraphDatabaseService service, UserFactory factory, String login, String password) {
 		if (factory.getUser(login, service) != null) {
 			throw new IllegalArgumentException("Login must be unique to the UserFactory");
 		}
@@ -28,7 +28,8 @@ public class User {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public User(NeoService service, UserFactory factory, String login, String password, String name, String email) {
+	public User(GraphDatabaseService service, UserFactory factory, String login, String password, String name,
+			String email) {
 		this(service, factory, login, password);
 		setName(name);
 		setEmail(email);

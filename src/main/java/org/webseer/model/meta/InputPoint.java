@@ -1,8 +1,8 @@
 package org.webseer.model.meta;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.NeoRelationshipType;
 
 /**
@@ -18,8 +18,8 @@ public class InputPoint extends TransformationField {
 
 	private static final String VARARGS = "VARARGS";
 
-	public InputPoint(NeoService service, Transformation transformation, String name, Type type, InputType inputType,
-			boolean required, boolean varargs) {
+	public InputPoint(GraphDatabaseService service, Transformation transformation, String name, Type type,
+			InputType inputType, boolean required, boolean varargs) {
 		super(service, null, new Field(service, type, name, false));
 		this.underlyingNode.createRelationshipTo(transformation.getUnderlyingNode(),
 				NeoRelationshipType.TRANSFORMATION_INPUTPOINT);

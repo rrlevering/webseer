@@ -21,9 +21,9 @@ import name.levering.ryan.util.IterableUtils;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Transaction;
-import org.neo4j.impl.transaction.TransactionFailureException;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.TransactionFailureException;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.Program;
 import org.webseer.model.Workspace;
@@ -66,7 +66,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 	@Override
 	protected void serviceWorkspace(Workspace workspace, HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		NeoService service = getNeoService();
+		GraphDatabaseService service = getNeoService();
 
 		Transaction tran = service.beginTx();
 		try {

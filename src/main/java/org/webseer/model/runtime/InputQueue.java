@@ -2,10 +2,10 @@ package org.webseer.model.runtime;
 
 import name.levering.ryan.util.IterableUtils;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.program.Neo4JProgramUtils;
@@ -22,7 +22,7 @@ public class InputQueue {
 
 	private final Node underlyingNode;
 
-	public InputQueue(NeoService service, TransformationNodeInput input, RuntimeTransformationNode node) {
+	public InputQueue(GraphDatabaseService service, TransformationNodeInput input, RuntimeTransformationNode node) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(Neo4JProgramUtils.getNode(input), NeoRelationshipType.QUEUE_TARGET);
 		this.underlyingNode.createRelationshipTo(node.getUnderlyingNode(), NeoRelationshipType.QUEUE_RUNTIME);

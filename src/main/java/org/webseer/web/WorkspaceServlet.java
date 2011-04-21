@@ -6,8 +6,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.Workspace;
 
@@ -21,7 +21,7 @@ public abstract class WorkspaceServlet extends SeerServlet {
 		String workspaceId = (String) getRequiredAttribute(req, "workspaceId");
 
 		Workspace workspace;
-		NeoService service = getNeoService();
+		GraphDatabaseService service = getNeoService();
 		Transaction tran = service.beginTx();
 		try {
 			workspace = Neo4JUtils.get(service, Long.parseLong(workspaceId), Workspace.class);
@@ -35,7 +35,7 @@ public abstract class WorkspaceServlet extends SeerServlet {
 
 	protected void serviceWorkspace(Workspace workspace, HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		NeoService service = getNeoService();
+		GraphDatabaseService service = getNeoService();
 		Transaction tran = service.beginTx();
 		try {
 			transactionalizedServiceWorkspace(workspace, req, resp);

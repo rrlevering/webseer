@@ -2,10 +2,10 @@ package org.webseer.model.runtime;
 
 import name.levering.ryan.util.IterableUtils;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.logging.LocalLog;
 import org.webseer.logging.Log;
 import org.webseer.model.Neo4JUtils;
@@ -43,7 +43,7 @@ public class RuntimeTransformationNode {
 
 	protected final Node underlyingNode;
 
-	public RuntimeTransformationNode(NeoService service, TransformationNode node) {
+	public RuntimeTransformationNode(GraphDatabaseService service, TransformationNode node) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(Neo4JProgramUtils.getNode(node), NeoRelationshipType.NODE_RUNTIME);
 
@@ -54,7 +54,7 @@ public class RuntimeTransformationNode {
 		}
 	}
 
-	public RuntimeTransformationNode(NeoService service, DisconnectedWorkspaceBucketNode node) {
+	public RuntimeTransformationNode(GraphDatabaseService service, DisconnectedWorkspaceBucketNode node) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(Neo4JProgramUtils.getNode(node), NeoRelationshipType.NODE_RUNTIME);
 	}

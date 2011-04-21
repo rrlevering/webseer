@@ -2,10 +2,10 @@ package org.webseer.model.trace;
 
 import java.util.Iterator;
 
-import org.neo4j.api.core.Direction;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.runtime.InputQueue;
@@ -26,7 +26,7 @@ public class InputGroup {
 	 * @param queue the input queue (runtime structure) that generated this input group. This can be used to track back
 	 *            to the input point this
 	 */
-	public InputGroup(NeoService service, InputQueue queue, TransformationGroup group) {
+	public InputGroup(GraphDatabaseService service, InputQueue queue, TransformationGroup group) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.createRelationshipTo(group.getUnderlyingNode(), NeoRelationshipType.SCOPE_GROUP);
 		this.underlyingNode.createRelationshipTo(Neo4JRuntimeUtils.getNode(queue),

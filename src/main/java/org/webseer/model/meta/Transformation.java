@@ -1,7 +1,7 @@
 package org.webseer.model.meta;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 
@@ -24,7 +24,7 @@ public class Transformation {
 
 	private final Node underlyingNode;
 
-	public Transformation(NeoService service, String name) {
+	public Transformation(GraphDatabaseService service, String name) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.setProperty(NAME, name);
 	}

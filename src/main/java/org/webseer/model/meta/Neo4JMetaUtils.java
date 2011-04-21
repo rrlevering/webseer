@@ -1,6 +1,6 @@
 package org.webseer.model.meta;
 
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.Node;
 
 public class Neo4JMetaUtils {
 

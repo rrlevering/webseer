@@ -10,8 +10,8 @@ import java.lang.reflect.Field;
 import name.levering.ryan.util.Pair;
 
 import org.apache.commons.lang.StringUtils;
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.webseer.io.BucketIO;
 import org.webseer.io.bucket.RandomAccessBucketIO;
 import org.webseer.model.Neo4JUtils;
@@ -33,7 +33,7 @@ public class Type {
 
 	private final Node underlyingNode;
 
-	public Type(NeoService service, String string) {
+	public Type(GraphDatabaseService service, String string) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.setProperty(NAME, string);
 	}
@@ -42,7 +42,7 @@ public class Type {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public void addField(NeoService service, Type type, String fieldName, boolean repeated) {
+	public void addField(GraphDatabaseService service, Type type, String fieldName, boolean repeated) {
 		org.webseer.model.meta.Field newField = new org.webseer.model.meta.Field(service, type, fieldName, repeated);
 		Neo4JUtils.addToList(service, underlyingNode, newField.underlyingNode, NeoRelationshipType.TYPE_FIRST_FIELD,
 				NeoRelationshipType.TYPE_LAST_FIELD, NeoRelationshipType.TYPE_FIELD);

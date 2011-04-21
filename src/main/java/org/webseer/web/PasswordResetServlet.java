@@ -9,7 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.neo4j.api.core.NeoService;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.webseer.model.User;
 import org.webseer.model.UserFactory;
 
@@ -20,7 +20,7 @@ public class PasswordResetServlet extends SeerServlet {
 	@Override
 	public void transactionalizedService(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		NeoService service = getNeoService();
+		GraphDatabaseService service = getNeoService();
 
 		if (request.getParameter("userid") != null) {
 			String userid = request.getParameter("userid");

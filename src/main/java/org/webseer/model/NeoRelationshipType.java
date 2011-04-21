@@ -1,8 +1,7 @@
 package org.webseer.model;
 
-import org.neo4j.api.core.RelationshipType;
 
-public enum NeoRelationshipType implements RelationshipType {
+public enum NeoRelationshipType implements org.neo4j.graphdb.RelationshipType {
 	BUCKET_RUNTIME, BUCKET_NEXT, BUCKET_NODEOUTPUT, BUCKET_FIRST, BUCKET_LAST,
 
 	OUTPUTGROUP_BUCKET, OUTPUTGROUP_TRANSFORMATIONGROUP, OUTPUTGROUP_LAST_ITEM,

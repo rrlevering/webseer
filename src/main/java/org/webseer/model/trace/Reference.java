@@ -2,9 +2,9 @@ package org.webseer.model.trace;
 
 import java.io.InputStream;
 
-import org.neo4j.api.core.NeoService;
-import org.neo4j.api.core.Node;
-import org.neo4j.api.core.Relationship;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Type;
@@ -18,7 +18,7 @@ public class Reference implements Item {
 
 	private final Node underlyingNode;
 
-	public Reference(NeoService service, OutputGroup outputGroup, ItemView item) {
+	public Reference(GraphDatabaseService service, OutputGroup outputGroup, ItemView item) {
 		this.underlyingNode = Neo4JUtils.createNode(service, Reference.class);
 
 		this.underlyingNode.createRelationshipTo(item.getUnderlyingNode(), NeoRelationshipType.REFERENCE_ITEM);
