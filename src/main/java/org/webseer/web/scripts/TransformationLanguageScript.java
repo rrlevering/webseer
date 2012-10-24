@@ -9,9 +9,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webseer.model.Workspace;
-import org.webseer.model.WorkspaceBucket;
 import org.webseer.model.meta.Transformation;
+import org.webseer.streams.model.Workspace;
+import org.webseer.streams.model.WorkspaceBucket;
 import org.webseer.transformation.TransformationFactory;
 import org.webseer.web.WorkspaceServlet;
 import org.webseer.web.beans.BucketBean;

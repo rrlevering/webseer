@@ -9,10 +9,11 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.webseer.model.program.TransformationNodeInput;
-import org.webseer.model.trace.DataItem;
-import org.webseer.model.trace.Item;
-import org.webseer.model.trace.Reference;
+import org.webseer.streams.model.WorkspaceBucket;
+import org.webseer.streams.model.program.TransformationNodeInput;
+import org.webseer.streams.model.trace.DataItem;
+import org.webseer.streams.model.trace.Item;
+import org.webseer.streams.model.trace.Reference;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -469,5 +470,9 @@ public class Neo4JUtils {
 		} else {
 			underlyingNode.setProperty(name, value);
 		}
+	}
+
+	public static Node getNode(User owner) {
+		return owner.getUnderlyingNode();
 	}
 }

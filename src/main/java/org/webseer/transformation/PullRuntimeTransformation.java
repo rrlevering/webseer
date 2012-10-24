@@ -1,7 +1,7 @@
 package org.webseer.transformation;
 
 import org.webseer.model.meta.TransformationException;
-import org.webseer.model.runtime.RuntimeTransformationException;
+import org.webseer.streams.model.runtime.RuntimeTransformationException;
 
 /**
  * Transformers are at the core of webseer and define its power. Think of a transformer as a document transformation

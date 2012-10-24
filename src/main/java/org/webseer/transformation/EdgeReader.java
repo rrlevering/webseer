@@ -2,7 +2,7 @@ package org.webseer.transformation;
 
 import java.util.Iterator;
 
-import org.webseer.model.trace.ItemView;
+import org.webseer.streams.model.trace.ItemView;
 
 /**
  * A bucket reader creates streams from a particular bucket. These streams all pull on demand from the transformation

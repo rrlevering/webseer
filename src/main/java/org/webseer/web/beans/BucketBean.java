@@ -1,6 +1,6 @@
 package org.webseer.web.beans;
 
-import org.webseer.model.WorkspaceBucket;
+import org.webseer.streams.model.WorkspaceBucket;
 
 public class BucketBean {
 

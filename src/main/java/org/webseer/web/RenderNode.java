@@ -11,12 +11,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
-import org.webseer.model.Workspace;
 import org.webseer.model.meta.TransformationException;
-import org.webseer.model.program.TransformationGraph;
-import org.webseer.model.program.TransformationNode;
-import org.webseer.model.runtime.RuntimeConfiguration;
-import org.webseer.model.trace.Item;
+import org.webseer.streams.model.Workspace;
+import org.webseer.streams.model.program.TransformationGraph;
+import org.webseer.streams.model.program.TransformationNode;
+import org.webseer.streams.model.runtime.RuntimeConfiguration;
+import org.webseer.streams.model.trace.Item;
 import org.webseer.transformation.BucketReader;
 
 import com.google.protobuf.ByteString;

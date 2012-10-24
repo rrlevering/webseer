@@ -17,9 +17,9 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.webseer.model.Neo4JUtils;
-import org.webseer.model.Workspace;
-import org.webseer.model.program.TransformationNode;
-import org.webseer.model.program.TransformationNodeInput;
+import org.webseer.streams.model.Workspace;
+import org.webseer.streams.model.program.TransformationNode;
+import org.webseer.streams.model.program.TransformationNodeInput;
 
 public class UploadFileToWorkspace extends WorkspaceServlet {
 

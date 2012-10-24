@@ -9,8 +9,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.Type;
-import org.webseer.model.runtime.RuntimeConfiguration;
-import org.webseer.model.runtime.RuntimeTransformationNode;
+import org.webseer.streams.model.runtime.RuntimeConfiguration;
+import org.webseer.streams.model.runtime.RuntimeTransformationNode;
 
 public class LanguageFactory {
 

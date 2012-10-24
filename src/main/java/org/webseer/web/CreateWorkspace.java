@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.webseer.model.User;
 import org.webseer.model.UserFactory;
-import org.webseer.model.Workspace;
-import org.webseer.model.WorkspaceFactory;
+import org.webseer.streams.model.Workspace;
+import org.webseer.streams.model.WorkspaceFactory;
 import org.webseer.web.beans.UserBean;
 import org.webseer.web.beans.WorkspaceBean;
 

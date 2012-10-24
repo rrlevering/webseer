@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.webseer.model.Workspace;
+import org.webseer.streams.model.Workspace;
 import org.webseer.web.beans.WorkspaceBean;
 
 public class EditWorkspace extends WorkspaceServlet {

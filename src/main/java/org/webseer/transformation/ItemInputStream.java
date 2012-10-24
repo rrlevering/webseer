@@ -7,9 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.webseer.model.meta.Type;
-import org.webseer.model.runtime.RuntimeConfigurationImpl.InputGroupGetter;
-import org.webseer.model.trace.InputGroup;
-import org.webseer.model.trace.ItemView;
+import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.InputGroupGetter;
+import org.webseer.streams.model.trace.InputGroup;
+import org.webseer.streams.model.trace.ItemView;
 import org.webseer.type.TypeFactory;
 
 /**

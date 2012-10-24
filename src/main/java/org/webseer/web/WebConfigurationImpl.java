@@ -4,8 +4,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.webseer.model.Workspace;
-import org.webseer.model.runtime.RuntimeConfigurationImpl;
+import org.webseer.streams.model.Workspace;
+import org.webseer.streams.model.runtime.RuntimeConfigurationImpl;
 
 public class WebConfigurationImpl extends RuntimeConfigurationImpl {
 

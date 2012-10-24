@@ -4,7 +4,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
-import org.webseer.model.program.TransformationGraph;
+import org.webseer.streams.model.program.TransformationGraph;
 
 public class WebEnhancedTransformationGraph extends TransformationGraph {
 

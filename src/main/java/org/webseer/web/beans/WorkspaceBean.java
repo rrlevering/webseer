@@ -2,7 +2,7 @@ package org.webseer.web.beans;
 
 import name.levering.ryan.util.IterableUtils;
 
-import org.webseer.model.Workspace;
+import org.webseer.streams.model.Workspace;
 
 /**
  * This bean is used whenever a summary of a workspace is needed without needing every group in the workspace to be

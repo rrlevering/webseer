@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.webseer.model.meta.TransformationException;
-import org.webseer.model.runtime.RuntimeConfiguration;
-import org.webseer.model.runtime.RuntimeTransformationException;
-import org.webseer.model.runtime.RuntimeTransformationNode;
+import org.webseer.streams.model.runtime.RuntimeConfiguration;
+import org.webseer.streams.model.runtime.RuntimeTransformationException;
+import org.webseer.streams.model.runtime.RuntimeTransformationNode;
 
 /**
  * This wraps a JavaFunction implementation that has input and output channels and a single execute method.

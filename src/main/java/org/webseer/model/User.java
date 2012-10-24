@@ -3,6 +3,7 @@ package org.webseer.model;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.webseer.streams.model.Workspace;
 
 public class User {
 

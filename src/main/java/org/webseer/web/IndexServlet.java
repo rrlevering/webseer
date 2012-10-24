@@ -10,8 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.webseer.model.Workspace;
-import org.webseer.model.WorkspaceFactory;
+import org.webseer.streams.model.Workspace;
+import org.webseer.streams.model.WorkspaceFactory;
 import org.webseer.web.beans.UserBean;
 import org.webseer.web.beans.WorkspaceBean;
 

@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.webseer.model.Neo4JUtils;
-import org.webseer.model.Workspace;
+import org.webseer.streams.model.Workspace;
 
 public abstract class WorkspaceServlet extends SeerServlet {
 

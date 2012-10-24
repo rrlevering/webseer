@@ -59,8 +59,8 @@ import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.TransformationField;
 import org.webseer.model.meta.Type;
-import org.webseer.model.runtime.RuntimeConfiguration;
-import org.webseer.model.runtime.RuntimeTransformationNode;
+import org.webseer.streams.model.runtime.RuntimeConfiguration;
+import org.webseer.streams.model.runtime.RuntimeTransformationNode;
 import org.webseer.type.TypeFactory;
 
 import com.google.protobuf.ByteString;

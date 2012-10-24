@@ -12,13 +12,13 @@ import name.levering.ryan.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.webseer.io.BucketIO;
-import org.webseer.io.bucket.RandomAccessBucketIO;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.Neo4JUtils.NodeReader;
 import org.webseer.model.NeoRelationshipType;
-import org.webseer.model.trace.Bucket;
-import org.webseer.model.trace.HasValue;
+import org.webseer.streams.io.BucketIO;
+import org.webseer.streams.io.bucket.RandomAccessBucketIO;
+import org.webseer.streams.model.trace.Bucket;
+import org.webseer.streams.model.trace.HasValue;
 import org.webseer.type.TypeFactory;
 
 import com.google.protobuf.ByteString;

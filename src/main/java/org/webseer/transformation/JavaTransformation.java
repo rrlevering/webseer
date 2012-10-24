@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.webseer.model.meta.TransformationException;
-import org.webseer.model.runtime.RuntimeTransformationNode;
+import org.webseer.streams.model.runtime.RuntimeTransformationNode;
 import org.webseer.visitor.AggregateSuperVisitor;
 import org.webseer.visitor.ReflectiveSuperVisitor;
 import org.webseer.visitor.SuperVisitor;

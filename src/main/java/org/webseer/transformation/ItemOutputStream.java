@@ -3,8 +3,8 @@ package org.webseer.transformation;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.webseer.model.runtime.RuntimeConfigurationImpl.OutputGroupGetter;
-import org.webseer.model.trace.DataItem;
+import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.OutputGroupGetter;
+import org.webseer.streams.model.trace.DataItem;
 
 public class ItemOutputStream<T> extends OutputStream implements BucketOutputStream<T> {
 

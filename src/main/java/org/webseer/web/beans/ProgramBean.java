@@ -1,6 +1,6 @@
 package org.webseer.web.beans;
 
-import org.webseer.model.Program;
+import org.webseer.streams.model.Program;
 
 public class ProgramBean {
 
