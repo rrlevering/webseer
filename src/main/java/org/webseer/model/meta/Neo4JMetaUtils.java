@@ -28,4 +28,8 @@ public class Neo4JMetaUtils {
 		return inputPoint.getUnderlyingNode();
 	}
 
+	public static Node getNode(Library library) {
+		return library.getUnderlyingNode();
+	}
+
 }

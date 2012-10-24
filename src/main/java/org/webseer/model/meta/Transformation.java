@@ -6,9 +6,11 @@ import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 
 /**
- * This is the model class that represents a webseer "macro-function". This transformation may or may not be a
- * valid/found transformation in the current system. It could potentially represent a function that can't be run
- * anymore. Transformations have URIs which are unique for the precise function that is being run.
+ * This is the model class that represents a webseer "macro-function". This
+ * transformation may or may not be a valid/found transformation in the current
+ * system. It could potentially represent a function that can't be run anymore.
+ * Transformations have URIs which are unique for the precise function that is
+ * being run.
  * 
  * @author ryan
  */
@@ -21,6 +23,8 @@ public class Transformation {
 	private static final String CODE = "code";
 
 	private static final String VERSION = "version";
+
+	private static final String KEYWORDS = "keywords";
 
 	private final Node underlyingNode;
 
@@ -39,6 +43,23 @@ public class Transformation {
 
 	public String getName() {
 		return Neo4JUtils.getString(underlyingNode, NAME);
+	}
+
+	public String getSimpleName() {
+		String name = getName();
+		int lastSegment = name.lastIndexOf('.');
+		if (lastSegment < 0) {
+			return name;
+		}
+		return name.substring(lastSegment + 1);
+	}
+
+	public void setKeyWords(String[] keyWords) {
+		Neo4JUtils.setStringArray(underlyingNode, KEYWORDS, keyWords);
+	}
+
+	public String[] getKeyWords() {
+		return Neo4JUtils.getStringArray(underlyingNode, KEYWORDS);
 	}
 
 	public void setDescription(String description) {
@@ -65,6 +86,10 @@ public class Transformation {
 		return "Java";
 	}
 
+	public String getRuntime() {
+		return "JRE from " + System.getProperty("java.vendor") + " v" + System.getProperty("java.version");
+	}
+
 	public Iterable<InputPoint> getInputPoints() {
 		return Neo4JUtils.getIterable(underlyingNode, NeoRelationshipType.TRANSFORMATION_INPUTPOINT, InputPoint.class);
 	}
@@ -74,6 +99,11 @@ public class Transformation {
 				.getIterable(underlyingNode, NeoRelationshipType.TRANSFORMATION_OUTPUTPOINT, OutputPoint.class);
 	}
 
+	public Iterable<Library> getLibraries() {
+		return Neo4JUtils
+				.getIterable(underlyingNode, NeoRelationshipType.TRANSFORMATION_LIBRARY, Library.class);
+	}
+
 	public OutputPoint getOutput(String name) {
 		for (OutputPoint output : getOutputPoints()) {
 			if (output.getName().equals(name)) {
@@ -81,11 +111,6 @@ public class Transformation {
 			}
 		}
 		return null;
-	}
-
-	public String getSimpleName() {
-		String fullName = getName();
-		return fullName.substring(fullName.lastIndexOf('.') + 1);
 	}
 
 	public String getPackage() {
