@@ -2,6 +2,7 @@ package org.webseer.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -17,14 +18,18 @@ import org.webseer.web.beans.UserBean;
 
 public abstract class SeerServlet extends HttpServlet {
 
+	private static final Logger log = Logger.getLogger(SeerServlet.class.getName());
+	
 	private static final long serialVersionUID = 1L;
 
 	public GraphDatabaseService getNeoService() {
 		GraphDatabaseService service = (GraphDatabaseService) getServletContext().getAttribute("neoService");
 		if (service == null) {
-			service = new EmbeddedGraphDatabase(new File(WebseerConfiguration.getWebseerRoot(), WebseerConfiguration
-					.getConfiguration().getString("WEBSEER_DB_DIR")).getAbsolutePath());
+			String dbDir = new File(WebseerConfiguration.getWebseerRoot(), WebseerConfiguration
+					.getConfiguration().getString("WEBSEER_DB_DIR")).getAbsolutePath();
+			service = new EmbeddedGraphDatabase(dbDir);
 			getServletContext().setAttribute("neoService", service);
+			log.info("Starting webseer with db at " + dbDir);
 		}
 		return service;
 	}
