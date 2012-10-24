@@ -5,19 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
-import org.apache.commons.io.IOUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -29,11 +24,11 @@ import org.webseer.model.meta.InputType;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.OutputPoint;
 import org.webseer.model.meta.Transformation;
-import org.webseer.model.meta.TransformationField;
-import org.webseer.model.meta.Type;
 import org.webseer.type.TypeFactory;
 
 public class TransformationFactory {
+
+	private static final Logger log = Logger.getLogger(TransformationFactory.class.getName());
 
 	private static Map<GraphDatabaseService, TransformationFactory> SINGLETON = new HashMap<GraphDatabaseService, TransformationFactory>();
 
@@ -44,7 +39,7 @@ public class TransformationFactory {
 	}
 
 	public void addTransformation(Transformation type) {
-		if (getTransformation(type.getName()) != null) {
+		if (getLatestTransformationByName(type.getName()) != null) {
 			throw new RuntimeException("Can't add a type with the same name");
 		}
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(type),
@@ -80,11 +75,11 @@ public class TransformationFactory {
 		return this.underlyingNode;
 	}
 
-	public Transformation getTransformation(String id) {
+	public Transformation getLatestTransformationByName(String name) {
 		Transformation latest = null;
 		Long version = null;
 		for (Transformation type : getAllTransformations()) {
-			if (type.getName().equals(id)) {
+			if (type.getName().equals(name)) {
 				if (latest == null || (version == null && type.getVersion() != null)
 						|| (version != null && type.getVersion() != null && version < type.getVersion())) {
 					latest = type;
@@ -93,6 +88,15 @@ public class TransformationFactory {
 			}
 		}
 		return latest;
+	}
+
+	public Transformation getTransformation(long id) {
+		for (Transformation type : getAllTransformations()) {
+			if (Neo4JMetaUtils.getNode(type).getId() == id) {
+				return type;
+			}
+		}
+		return null;
 	}
 
 	public Iterable<Transformation> getAllTransformations() {
@@ -137,12 +141,9 @@ public class TransformationFactory {
 			blah.add(transformation);
 		}
 		for (Transformation transformation : blah) {
-			System.out.println("Removing " + transformation.getName());
+			log.info("Removing transformation: " + transformation.getName());
 			removeTransformation(transformation);
 		}
-
-		TypeFactory factory = TypeFactory.getTypeFactory(service);
-		factory.bootstrapBuiltins(service);
 
 		// Add/update all the builtin webseer transformations
 		Transaction tran = service.beginTx();
@@ -167,7 +168,7 @@ public class TransformationFactory {
 				}
 			}
 			for (Transformation transformation : toRemove) {
-				System.out.println("Removing " + transformation.getName());
+				log.info("Removing built-in transformation: " + transformation.getName());
 				removeTransformation(transformation);
 			}
 
@@ -186,7 +187,7 @@ public class TransformationFactory {
 				}
 				String className = javaFile.getName().substring(0, sepPos);
 				String qualifiedName = packageName + "." + className;
-				Transformation trans = getTransformation(qualifiedName);
+				Transformation trans = getLatestTransformationByName(qualifiedName);
 
 				found.add(qualifiedName);
 
@@ -197,7 +198,7 @@ public class TransformationFactory {
 						if (trans != null) {
 							addTransformation(trans);
 
-							System.out.println("Added " + qualifiedName);
+							log.info("Added built-in transformation: " + qualifiedName);
 						}
 					} else {
 						long modified = javaFile.lastModified();
@@ -210,10 +211,10 @@ public class TransformationFactory {
 								removeTransformation(trans);
 								addTransformation(newTrans);
 
-								System.out.println("Replaced " + qualifiedName);
+								log.info("Replaced built-in transformation: " + qualifiedName);
 							}
 						} else {
-							System.out.println("Found " + qualifiedName);
+							log.info("Found built-in transformation: " + qualifiedName);
 						}
 					}
 				} catch (FileNotFoundException e) {
@@ -232,112 +233,7 @@ public class TransformationFactory {
 
 	private Transformation createTransformation(GraphDatabaseService service, String qualifiedName, Reader reader,
 			long version) throws IOException {
-		String code = IOUtils.toString(reader);
-		Class<?> clazz = JavaRuntimeFactory.getClass(qualifiedName, new StringReader(code));
-		if (!JavaFunction.class.isAssignableFrom(clazz)) {
-			return null;
-		}
-		Transformation trans = new Transformation(service, qualifiedName);
-
-		TypeFactory factory = TypeFactory.getTypeFactory(service);
-
-		// Get inputs and outputs
-		Field[] fields = clazz.getDeclaredFields();
-		for (Field field : fields) {
-			if (field.getAnnotation(InputChannel.class) != null) {
-				// An input
-				Type type;
-				java.lang.reflect.Type fieldType = field.getGenericType();
-				InputType inputType;
-				boolean varargs;
-				if (factory.getType(TypeFactory.getTypeName(fieldType)) != null) {
-					type = TypeFactory.getTypeFactory(service).getType(TypeFactory.getTypeName(fieldType));
-					inputType = InputType.SERIAL;
-					varargs = false;
-				} else if (fieldType instanceof ParameterizedType) {
-					ParameterizedType paramType = (ParameterizedType) fieldType;
-					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || Iterator.class
-							.isAssignableFrom((Class<?>) paramType.getRawType()))
-							&& factory.getType(TypeFactory.getTypeName(paramType.getActualTypeArguments()[0])) != null) {
-						type = factory.getType(TypeFactory.getTypeName(paramType.getActualTypeArguments()[0]));
-						inputType = InputType.AGGREGATE;
-						varargs = false;
-					} else {
-						continue;
-					}
-				} else if (fieldType instanceof Class<?> && ((Class<?>) fieldType).isArray()) {
-					// Varargs
-					Class<?> componentType = ((Class<?>) fieldType).getComponentType();
-					if (factory.getType(TypeFactory.getTypeName(componentType)) != null) {
-						type = factory.getType(TypeFactory.getTypeName(componentType));
-						inputType = InputType.SERIAL;
-						varargs = true;
-					} else {
-						continue;
-					}
-				} else if (fieldType instanceof GenericArrayType) {
-					ParameterizedType paramType = (ParameterizedType) ((GenericArrayType) fieldType)
-							.getGenericComponentType();
-					if (Iterator.class.isAssignableFrom((Class<?>) paramType.getRawType())
-							&& factory.getType(TypeFactory.getTypeName(paramType.getActualTypeArguments()[0])) != null) {
-						type = factory.getType(TypeFactory.getTypeName(paramType.getActualTypeArguments()[0]));
-						inputType = InputType.AGGREGATE;
-						varargs = true;
-					} else {
-						continue;
-					}
-				} else {
-					continue;
-				}
-				// Run through the nested structure of the type and generate input points for every level
-				InputPoint inputPoint = new InputPoint(service, trans, field.getName(), type, inputType, true, varargs);
-				generateInputPoints(service, trans, inputPoint, type);
-
-			} else if (field.getAnnotation(OutputChannel.class) != null) {
-				// An output
-				Type type;
-				java.lang.reflect.Type fieldType = field.getGenericType();
-				if (factory.getType(TypeFactory.getTypeName(fieldType)) != null) {
-					type = factory.getType(TypeFactory.getTypeName(fieldType));
-				} else if (fieldType instanceof ParameterizedType) {
-					ParameterizedType paramType = (ParameterizedType) fieldType;
-					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || BucketOutputStream.class
-							.isAssignableFrom((Class<?>) paramType.getRawType()))
-							&& factory.getType(TypeFactory.getTypeName(paramType.getActualTypeArguments()[0])) != null) {
-						type = factory.getType(TypeFactory.getTypeName(paramType.getActualTypeArguments()[0]));
-					} else {
-						continue;
-					}
-				} else {
-					continue;
-				}
-				OutputPoint outputPoint = new OutputPoint(service, trans, field.getName(), type);
-				generateOutputPoints(service, trans, outputPoint, type);
-			}
-		}
-
-		// Put code in
-		trans.setCode(code);
-		trans.setVersion(version);
-
-		return trans;
+		return LanguageFactory.getInstance().generateTransformation("Java", service, qualifiedName, reader, version);
 	}
 
-	private void generateInputPoints(GraphDatabaseService service, Transformation trans, TransformationField parent,
-			Type type) {
-		// Make input points for all the subfields
-		for (org.webseer.model.meta.Field field : type.getFields()) {
-			TransformationField subField = new TransformationField(service, parent, field);
-			generateInputPoints(service, trans, subField, field.getType());
-		}
-	}
-
-	private void generateOutputPoints(GraphDatabaseService service, Transformation trans, TransformationField parent,
-			Type type) {
-		// Make input points for all the subfields
-		for (org.webseer.model.meta.Field field : type.getFields()) {
-			TransformationField subField = new TransformationField(service, parent, field);
-			generateOutputPoints(service, trans, subField, field.getType());
-		}
-	}
 }

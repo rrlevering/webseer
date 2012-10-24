@@ -482,7 +482,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		String uri = paramObject.get("typeId").getAsString();
 		JsonElement positionObject = paramObject.get("position");
 		Transformation transformation = TransformationFactory.getTransformationFactory(getNeoService())
-				.getTransformation(uri);
+				.getLatestTransformationByName(uri);
 		TransformationNode node = new TransformationNode(getNeoService(), transformation, graph);
 		node.setUIProperty("position", positionObject.toString());
 		JsonObject returnValue = new JsonObject();

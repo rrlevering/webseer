@@ -4,22 +4,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import name.levering.ryan.util.BiMap;
 import name.levering.ryan.util.HashBiMap;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -29,36 +25,19 @@ import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.Type;
-import org.webseer.transformation.BucketOutputStream;
-import org.webseer.transformation.JavaRuntimeFactory;
+import org.webseer.transformation.LanguageFactory;
 
 import com.google.protobuf.ByteString;
 
 public class TypeFactory {
 
-	private static Map<Class<?>, String> PRIMITIVE_MAP = new HashMap<Class<?>, String>();
-
-	static {
-		PRIMITIVE_MAP.put(String.class, "string");
-		PRIMITIVE_MAP.put(Double.class, "double");
-		PRIMITIVE_MAP.put(Double.TYPE, "double");
-		PRIMITIVE_MAP.put(Float.class, "float");
-		PRIMITIVE_MAP.put(Float.TYPE, "float");
-		PRIMITIVE_MAP.put(Integer.class, "int32");
-		PRIMITIVE_MAP.put(Integer.TYPE, "int32");
-		PRIMITIVE_MAP.put(Long.class, "int64");
-		PRIMITIVE_MAP.put(Long.TYPE, "int64");
-		PRIMITIVE_MAP.put(Boolean.class, "bool");
-		PRIMITIVE_MAP.put(Boolean.TYPE, "bool");
-		PRIMITIVE_MAP.put(ByteString.class, "bytes");
-		PRIMITIVE_MAP.put(InputStream.class, "bytes");
-		PRIMITIVE_MAP.put(OutputStream.class, "bytes");
-		PRIMITIVE_MAP.put(BucketOutputStream.class, "bytes");
-	}
+	private static final Logger log = Logger.getLogger(TypeFactory.class.getName());
 
 	private static final String[] PRIMITIVE_TYPES = new String[] { "bytes", "string", "bool", "sfixed64", "sfixed32",
 			"sfixed64", "fixed64", "fixed32", "sint64", "sint32", "uint64", "uint32", "int64", "int32", "float",
 			"double" };
+
+	private static Map<GraphDatabaseService, TypeFactory> SINGLETON = new HashMap<GraphDatabaseService, TypeFactory>();
 
 	private final Node underlyingNode;
 
@@ -224,12 +203,16 @@ public class TypeFactory {
 	}
 
 	public static TypeFactory getTypeFactory(GraphDatabaseService service, boolean bootstrap) {
-		TypeFactory factory = Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_TYPE_FACTORY,
-				TypeFactory.class);
-		factory.bootstrapPrimitives(service);
-		if (bootstrap) {
-			factory.bootstrapBuiltins(service);
+		if (!SINGLETON.containsKey(service)) {
+			TypeFactory factory = Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_TYPE_FACTORY,
+					TypeFactory.class);
+			factory.bootstrapPrimitives(service);
+			if (bootstrap) {
+				factory.bootstrapBuiltins(service);
+			}
+			SINGLETON.put(service, factory);
 		}
+		TypeFactory factory = SINGLETON.get(service);
 		return factory;
 	}
 
@@ -308,7 +291,7 @@ public class TypeFactory {
 				}
 			}
 			for (Type type : toRemove) {
-				System.out.println("Removing " + type.getName());
+				log.info("Removing type: " + type.getName());
 				removeType(type);
 			}
 
@@ -321,17 +304,6 @@ public class TypeFactory {
 	public void removeType(Type type) {
 		Neo4JMetaUtils.getNode(type).getSingleRelationship(NeoRelationshipType.TYPE_FACTORY_TYPE, Direction.INCOMING)
 				.delete();
-	}
-
-	public static String getTypeName(java.lang.reflect.Type typeClazz) {
-		if (PRIMITIVE_MAP.containsKey(typeClazz)) {
-			return PRIMITIVE_MAP.get(typeClazz);
-		}
-		// Otherwise, use the full name
-		if (typeClazz instanceof Class<?>) {
-			return ((Class<?>) typeClazz).getName();
-		}
-		return null;
 	}
 
 	private void recurBuiltins(GraphDatabaseService service, File builtInDir, String packageName, Set<String> found) {
@@ -349,11 +321,12 @@ public class TypeFactory {
 
 				try {
 					if (type == null) {
+						//FIXME This fails now because it's trying to compile non types without libraries
 						type = createType(service, qualifiedName, new FileReader(javaFile), javaFile.lastModified());
 						if (type != null) {
 							addType(type);
 
-							System.out.println("Added " + qualifiedName);
+							log.info("Added type: " + qualifiedName);
 						}
 					} else {
 						long modified = javaFile.lastModified();
@@ -366,10 +339,10 @@ public class TypeFactory {
 								removeType(type);
 								addType(newType);
 
-								System.out.println("Replaced " + qualifiedName);
+								log.info("Replaced type: " + qualifiedName);
 							}
 						} else {
-							System.out.println("Found " + qualifiedName);
+							log.info("Found type: " + qualifiedName);
 						}
 					}
 				} catch (FileNotFoundException e) {
@@ -388,35 +361,7 @@ public class TypeFactory {
 
 	private Type createType(GraphDatabaseService service, String qualifiedName, Reader reader, long version)
 			throws IOException {
-		String code = IOUtils.toString(reader);
-		Class<?> clazz = JavaRuntimeFactory.getClass(qualifiedName, new StringReader(code));
-		if (clazz.getAnnotation(org.webseer.type.Type.class) == null) {
-			return null;
-		}
-		Type type = new Type(service, qualifiedName);
-
-		// Read all the fields
-		Field[] fields = clazz.getFields();
-		for (Field field : fields) {
-			java.lang.reflect.Type fieldType = field.getGenericType();
-			if (getType(getTypeName(fieldType)) != null) {
-				Type typeObject = getType(getTypeName(fieldType));
-				type.addField(service, typeObject, field.getName(), false);
-			} else if (fieldType instanceof Class<?> && ((Class<?>) fieldType).isArray()) {
-				// Repeated
-				Class<?> componentType = ((Class<?>) fieldType).getComponentType();
-				if (getType(getTypeName(componentType)) != null) {
-					Type typeObject = getType(getTypeName(componentType));
-					type.addField(service, typeObject, field.getName(), true);
-				}
-			}
-
-		}
-
-		// Put code in
-		type.setVersion(version);
-
-		return type;
+		return LanguageFactory.getInstance().generateType("Java", service, qualifiedName, reader, version);
 	}
 
 	public static interface CastFunction {

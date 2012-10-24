@@ -1,9 +1,14 @@
 package org.webseer.transformation;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
+import org.webseer.model.meta.Type;
 import org.webseer.model.runtime.RuntimeConfiguration;
 import org.webseer.model.runtime.RuntimeTransformationNode;
 
@@ -24,9 +29,19 @@ public class LanguageFactory {
 		languages.put("Java", new JavaRuntimeFactory());
 	}
 
+	public Transformation generateTransformation(String language, GraphDatabaseService service, String qualifiedName,
+			Reader reader, long version) throws IOException {
+		return languages.get(language).generateTransformation(service, qualifiedName, reader, version);
+	}
+
 	public PullRuntimeTransformation generatePullTransformation(RuntimeConfiguration config,
 			RuntimeTransformationNode runtime) throws TransformationException {
 		return languages.get(runtime.getTransformationNode().getTransformation().getLanguage())
 				.generatePullTransformation(config, runtime);
+	}
+
+	public Type generateType(String language, GraphDatabaseService service, String qualifiedName, Reader reader,
+			long version) throws IOException {
+		return languages.get(language).generateType(service, qualifiedName, reader, version);
 	}
 }
