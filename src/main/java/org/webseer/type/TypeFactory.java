@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import name.levering.ryan.util.BiMap;
 import name.levering.ryan.util.HashBiMap;
@@ -21,6 +20,8 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
@@ -31,7 +32,7 @@ import com.google.protobuf.ByteString;
 
 public class TypeFactory {
 
-	private static final Logger log = Logger.getLogger(TypeFactory.class.getName());
+	private static final Logger log = LoggerFactory.getLogger(TypeFactory.class);
 
 	private static final String[] PRIMITIVE_TYPES = new String[] { "bytes", "string", "bool", "sfixed64", "sfixed32",
 			"sfixed64", "fixed64", "fixed32", "sint64", "sint32", "uint64", "uint32", "int64", "int32", "float",

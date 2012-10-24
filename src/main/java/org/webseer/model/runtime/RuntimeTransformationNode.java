@@ -6,8 +6,8 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.webseer.logging.LocalLog;
-import org.webseer.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.TransformationException;
@@ -37,7 +37,7 @@ import org.webseer.transformation.PullRuntimeTransformation;
  */
 public class RuntimeTransformationNode {
 
-	public static final LocalLog LOG = Log.getInstance("RUNTIME");
+	public static final Logger LOG = LoggerFactory.getLogger(RuntimeTransformationNode.class);
 
 	public static final String TRANSFORMATION_NODE = "TRANSFORMATION_NODE";
 

@@ -140,7 +140,7 @@ public abstract class JavaTransformation implements PushRuntimeTransformation {
 							field.setInt(JavaTransformation.this, Integer.parseInt((String) o));
 						}
 					} else {
-						RuntimeTransformationNode.LOG.logDebug("Cannot assign object of type %1 to field of type %2",
+						RuntimeTransformationNode.LOG.debug("Cannot assign object of type %1 to field of type %2",
 								o.getClass(), field.getType());
 					}
 				} catch (IllegalArgumentException e) {

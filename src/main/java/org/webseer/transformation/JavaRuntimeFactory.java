@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +47,8 @@ import javax.tools.ToolProvider;
 
 import org.apache.commons.io.IOUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.InputPoint;
 import org.webseer.model.meta.InputType;
@@ -72,7 +73,7 @@ import com.google.protobuf.ByteString;
  */
 public class JavaRuntimeFactory implements RuntimeFactory {
 
-	private static final Logger log = Logger.getLogger(JavaRuntimeFactory.class.getName());
+	private static final Logger log = LoggerFactory.getLogger(JavaRuntimeFactory.class);
 
 	private static Map<Class<?>, String> PRIMITIVE_MAP = new HashMap<Class<?>, String>();
 
