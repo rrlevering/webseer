@@ -7,12 +7,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.webseer.transformation.FunctionDef;
+import org.webseer.transformation.ImportLibrary;
 import org.webseer.transformation.InputChannel;
 import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
 
 import com.google.protobuf.ByteString;
 
+@FunctionDef(description = "Downloads a document from a URL", keywords = {
+		"fetch", "url" }, libraries = { @ImportLibrary(group = "commons-io", name = "commons-io", version = "1.4") })
 public class URLFetcher implements JavaFunction {
 
 	@InputChannel

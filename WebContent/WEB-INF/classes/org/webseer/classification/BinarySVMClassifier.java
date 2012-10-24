@@ -5,7 +5,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.webseer.model.meta.Import;
+import org.webseer.transformation.ImportLibrary;
 import org.webseer.transformation.InputChannel;
 import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
@@ -19,7 +19,7 @@ import weka.core.SparseInstance;
 
 import com.google.protobuf.ByteString;
 
-@Import(name = "Weka", version = 1)
+@ImportLibrary(name = "weka", group = "weka", version = "1")
 public class BinarySVMClassifier implements JavaFunction {
 
 	@InputChannel
