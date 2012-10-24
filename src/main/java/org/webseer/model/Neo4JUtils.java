@@ -14,6 +14,10 @@ import org.webseer.model.trace.DataItem;
 import org.webseer.model.trace.Item;
 import org.webseer.model.trace.Reference;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+
 /**
  * This class breaks all the encapsulation of the data backing. This is necessary to be able to use package protection
  * on the data classes while still allowing inter-package sharing of underlying data. This should hold all the nastiness
@@ -44,6 +48,22 @@ public class Neo4JUtils {
 
 	public final static Node getNode(WorkspaceBucket bucket) {
 		return bucket.getUnderlyingNode();
+	}
+
+	public final static String[] getStringArray(Node underlyingNode, String propName) {
+		String propString = getString(underlyingNode, propName);
+		if (propString == null) {
+			return null;
+		}
+		return Iterables.toArray(Splitter.on(',').split(propString), String.class);
+	}
+
+	public final static void setStringArray(Node underlyingNode, String propName, String[] values) {
+		underlyingNode.setProperty(propName, Joiner.on(',').join(values));
+	}
+
+	public final static byte[] getByteArray(Node underlyingNode, String propName) {
+		return (byte[]) underlyingNode.getProperty(propName, null);
 	}
 
 	public final static String getString(Node underlyingNode, String propName) {
