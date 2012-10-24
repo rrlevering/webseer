@@ -9,7 +9,6 @@ import org.w3c.dom.Text;
 import org.webseer.transformation.FunctionDef;
 import org.webseer.transformation.InputChannel;
 import org.webseer.transformation.OutputChannel;
-import org.webseer.util.HTMLParsingFunction;
 
 @FunctionDef(description = "Extracts text from an HTML document", keywords = { "extract", "text", "html" })
 public class ExtractText extends HTMLParsingFunction {

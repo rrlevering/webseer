@@ -1,4 +1,4 @@
-package org.webseer.util;
+package org.webseer.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,7 +19,6 @@ import org.w3c.dom.Node;
 import org.w3c.tidy.Configuration;
 import org.w3c.tidy.Tidy;
 import org.webseer.transformation.JavaFunction;
-import org.webseer.web.DocumentView;
 
 public abstract class HTMLParsingFunction implements JavaFunction {
 	private static final Set<String> inlineTags = new HashSet<String>();
