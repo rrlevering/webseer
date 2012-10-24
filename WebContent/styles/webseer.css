@@ -158,3 +158,28 @@ a.graph, a.graph:link, a.graph:visited {
 .hidden{
     display:none;
 }
+
+html,
+body {
+   margin:0;
+   padding:0;
+   height:100%;
+}
+#container {
+   min-height:100%;
+   position:relative;
+}
+#header {
+   background-color:white;
+}
+#body {
+	margin-left:10px;
+   padding-bottom:90px;   /* Height of the footer */
+}
+#footer {
+   position:absolute;
+   bottom:0;
+   width:100%;
+   height:90px;   /* Height of the footer */
+   background-color:white;
+}
