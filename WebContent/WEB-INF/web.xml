@@ -53,6 +53,14 @@
     <servlet-class>org.webseer.web.PasswordResetServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>transformations</servlet-name>
+    <servlet-class>org.webseer.web.ListTransformations</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>transformation</servlet-name>
+    <servlet-class>org.webseer.web.ViewTransformation</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>edit-workspace</servlet-name>
     <servlet-class>org.webseer.web.EditWorkspace</servlet-class>
   </servlet>
@@ -95,6 +103,14 @@
   <servlet-mapping>
     <servlet-name>modify-workspace-graph</servlet-name>
     <url-pattern>/modify-workspace</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>transformations</servlet-name>
+    <url-pattern>/transformations</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>transformation</servlet-name>
+    <url-pattern>/transformation</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>render-node</servlet-name>
