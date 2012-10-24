@@ -127,6 +127,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 
 	}
@@ -138,7 +139,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(GENERATE_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -159,6 +160,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -169,7 +171,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(GENERATE_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -199,6 +201,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -209,7 +212,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(GENERATE_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -219,7 +222,7 @@ public class WebseerTests extends TestCase {
 
 			assertEmpty(bucket.getItems());
 
-			transformation = factory.getTransformation(CONVERT_FUNCTION_NAME);
+			transformation = factory.getLatestTransformationByName(CONVERT_FUNCTION_NAME);
 
 			TransformationNode node2 = new TransformationNode(neo, transformation, graph);
 
@@ -247,6 +250,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -258,7 +262,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(GENERATE_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -268,7 +272,7 @@ public class WebseerTests extends TestCase {
 
 			assertEmpty(bucket.getItems());
 
-			transformation = factory.getTransformation(CONVERT_FUNCTION_NAME);
+			transformation = factory.getLatestTransformationByName(CONVERT_FUNCTION_NAME);
 
 			TransformationNode node2 = new TransformationNode(neo, transformation, graph);
 
@@ -308,6 +312,7 @@ public class WebseerTests extends TestCase {
 		afterCount = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
 
 		assertEquals("Should not have extra references after all the items from the run are deleted", count, afterCount);
+		neo.shutdown();
 	}
 
 	public void testTwoStepCastingFill() throws Exception {
@@ -317,7 +322,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(TIME_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(TIME_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -327,7 +332,7 @@ public class WebseerTests extends TestCase {
 
 			assertEmpty(bucket.getItems());
 
-			transformation = factory.getTransformation(CONVERT_FUNCTION_NAME);
+			transformation = factory.getLatestTransformationByName(CONVERT_FUNCTION_NAME);
 
 			TransformationNode node2 = new TransformationNode(neo, transformation, graph);
 
@@ -355,6 +360,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -365,7 +371,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(GENERATE_MULTI_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_MULTI_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -393,6 +399,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -403,7 +410,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(GENERATE_MULTI_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_MULTI_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -443,6 +450,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -453,7 +461,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(GENERATE_MULTI_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_MULTI_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -463,7 +471,7 @@ public class WebseerTests extends TestCase {
 
 			assertEmpty(bucket.getItems());
 
-			transformation = factory.getTransformation(CONVERT_FUNCTION_NAME);
+			transformation = factory.getLatestTransformationByName(CONVERT_FUNCTION_NAME);
 
 			TransformationNode node2 = new TransformationNode(neo, transformation, graph);
 
@@ -501,6 +509,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -513,7 +522,7 @@ public class WebseerTests extends TestCase {
 		Transaction tran = neo.beginTx();
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
-			Transformation transformation = factory.getTransformation(GENERATE_MULTI_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_MULTI_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -563,6 +572,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -573,7 +583,7 @@ public class WebseerTests extends TestCase {
 		long count, afterCount;
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
-			Transformation transformation = factory.getTransformation(GENERATE_MULTI_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_MULTI_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -664,6 +674,7 @@ public class WebseerTests extends TestCase {
 		afterCount = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
 
 		assertEquals("Should not have extra references after all the items from the run are deleted", count, afterCount);
+		neo.shutdown();
 	}
 
 	public void testMultipleOutputs() throws Exception {
@@ -673,7 +684,7 @@ public class WebseerTests extends TestCase {
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
 
-			Transformation transformation = factory.getTransformation(OUTPUTS_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(OUTPUTS_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -705,6 +716,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
@@ -717,7 +729,7 @@ public class WebseerTests extends TestCase {
 		Transaction tran = neo.beginTx();
 		try {
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
-			Transformation transformation = factory.getTransformation(GENERATE_MULTI_FUNCTION_NAME);
+			Transformation transformation = factory.getLatestTransformationByName(GENERATE_MULTI_FUNCTION_NAME);
 
 			// Create a transient program graph with a single node
 			TransformationGraph graph = new TransformationGraph(neo);
@@ -727,7 +739,7 @@ public class WebseerTests extends TestCase {
 
 			assertEmpty(bucket.getItems());
 
-			transformation = factory.getTransformation(COUNT_FUNCTION_NAME);
+			transformation = factory.getLatestTransformationByName(COUNT_FUNCTION_NAME);
 
 			TransformationNode node2 = new TransformationNode(neo, transformation, graph);
 
@@ -751,6 +763,7 @@ public class WebseerTests extends TestCase {
 			tran.success();
 		} finally {
 			tran.finish();
+			neo.shutdown();
 		}
 	}
 
