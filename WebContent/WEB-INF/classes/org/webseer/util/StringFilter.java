@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 /**
  * Redirects a string by whether it matches a set of strings.

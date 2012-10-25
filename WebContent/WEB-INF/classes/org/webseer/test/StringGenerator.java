@@ -1,7 +1,7 @@
 package org.webseer.test;
 
-import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 /**
  * This is just a "test" class to seed webseer with some starting functions.

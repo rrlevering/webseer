@@ -1,5 +1,6 @@
-package org.webseer.transformation;
+package org.webseer.transformation.java;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -14,12 +15,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.webseer.model.meta.TransformationException;
-import org.webseer.streams.model.runtime.RuntimeConfiguration;
-import org.webseer.streams.model.runtime.RuntimeTransformationException;
-import org.webseer.streams.model.runtime.RuntimeTransformationNode;
+import org.webseer.transformation.InputReader;
+import org.webseer.transformation.ItemInputStream;
+import org.webseer.transformation.ItemOutputStream;
+import org.webseer.transformation.PullRuntimeTransformation;
+import org.webseer.transformation.RuntimeTransformationException;
+import org.webseer.transformation.TransformationListener;
+
+import com.google.common.collect.Lists;
 
 /**
- * This wraps a JavaFunction implementation that has input and output channels and a single execute method.
+ * This wraps a JavaFunction implementation that has input and output channels
+ * and a single execute method.
  * 
  * @author ryan
  */
@@ -32,21 +39,18 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 	private final Map<String, InputReader> readers = new HashMap<String, InputReader>();
 
 	private final Map<String, ItemOutputStream<?>> outputs = new HashMap<String, ItemOutputStream<?>>();
-
-	private RuntimeTransformationNode node;
-
-	private RuntimeConfiguration config;
+	
+	private final List<TransformationListener> listeners = Lists.newArrayList();
 
 	private boolean runOnce = false;
 
-	public PullJavaFunction(RuntimeConfiguration config, RuntimeTransformationNode node, JavaFunction object) {
+	public PullJavaFunction(JavaFunction object) {
 		this.object = object;
-		this.node = node;
-		this.config = config;
 	}
 
 	/**
-	 * For any inputs that are sinks, set them right now. Otherwise, add the streams to the list of streams.
+	 * For any inputs that are sinks, set them right now. Otherwise, add the
+	 * streams to the list of streams.
 	 */
 	public void addInputChannel(String inputPoint, final InputReader inputReader) throws TransformationException {
 		readers.put(inputPoint, inputReader);
@@ -75,7 +79,9 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 		}
 
 		// Start new transformation group
-		this.config.initRunning(node);
+		for (TransformationListener listener : listeners) {
+			listener.init();
+		}
 
 		// Pull inputs, doing source synchronization
 		Class<? extends JavaFunction> objectClass = object.getClass();
@@ -101,9 +107,11 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 				f.setAccessible(true);
 				Type type = f.getGenericType();
 				if (type instanceof GenericArrayType) {
-					// Class<?> rawClass = (Class<?>) ((ParameterizedType) ((GenericArrayType) type)
+					// Class<?> rawClass = (Class<?>) ((ParameterizedType)
+					// ((GenericArrayType) type)
 					// .getGenericComponentType()).getRawType();
-					// Object[] streams = (Object[]) Array.newInstance(rawClass, entry.getValue().size());
+					// Object[] streams = (Object[]) Array.newInstance(rawClass,
+					// entry.getValue().size());
 					// for (int i = 0; i < entry.getValue().size(); i++) {
 					// if (entry.getValue().get(i).hasNext()) {
 					// streams[i] = entry.getValue().get(i).next();
@@ -158,7 +166,7 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 		for (String outputPoint : outputs.keySet()) {
 			try {
 				Field f = objectClass.getDeclaredField(outputPoint);
-				if (BucketOutputStream.class.isAssignableFrom(f.getType())) {
+				if (ItemOutputStream.class.isAssignableFrom(f.getType())) {
 					f.setAccessible(true);
 					f.set(object, outputs.get(outputPoint));
 				} else if (!f.getType().isPrimitive()) {
@@ -176,7 +184,9 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 			}
 		}
 
-		this.config.startRunning(node);
+		for (TransformationListener listener : listeners) {
+			listener.start();
+		}
 
 		try {
 			object.execute();
@@ -184,9 +194,10 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 			throw new RuntimeTransformationException(e);
 		}
 
-		this.config.endRunning(node);
+		for (TransformationListener listener : listeners) {
+			listener.end();
+		}
 
-		System.out.println("Transformed " + node.getTransformationNode().getTransformation().getName());
 		objectClass = object.getClass();
 		for (String outputPoint : outputs.keySet()) {
 			Object value;
@@ -224,5 +235,10 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 	@Override
 	public void addOutputChannel(String outputPoint, ItemOutputStream<?> output) {
 		outputs.put(outputPoint, output);
+	}
+
+	@Override
+	public void addListener(TransformationListener listener) {
+		this.listeners.add(listener);
 	}
 }

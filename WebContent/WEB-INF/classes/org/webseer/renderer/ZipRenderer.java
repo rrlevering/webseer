@@ -7,8 +7,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 import com.google.protobuf.ByteString;
 

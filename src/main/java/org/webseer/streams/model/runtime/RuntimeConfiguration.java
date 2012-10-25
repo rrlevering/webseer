@@ -10,7 +10,6 @@ import org.webseer.streams.model.program.WorkspaceBucketNode;
 import org.webseer.streams.model.trace.Bucket;
 import org.webseer.streams.model.trace.ItemView;
 import org.webseer.streams.model.trace.OutputGroup;
-import org.webseer.transformation.BucketReader;
 import org.webseer.transformation.InputReader;
 
 public interface RuntimeConfiguration {

@@ -1,4 +1,4 @@
-package org.webseer.transformation;
+package org.webseer.transformation.java;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -59,15 +59,20 @@ import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.TransformationField;
 import org.webseer.model.meta.Type;
-import org.webseer.streams.model.runtime.RuntimeConfiguration;
-import org.webseer.streams.model.runtime.RuntimeTransformationNode;
+import org.webseer.transformation.FunctionDef;
+import org.webseer.transformation.InputChannel;
+import org.webseer.transformation.ItemOutputStream;
+import org.webseer.transformation.LibraryFactory;
+import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.PullRuntimeTransformation;
+import org.webseer.transformation.RuntimeFactory;
 import org.webseer.type.TypeFactory;
 
 import com.google.protobuf.ByteString;
 
 /**
- * The Java runtime factory is responsible for taking Java source from the
- * database, compiling it, and returning a runnable transformation.
+ * The Java runtime factory is responsible for taking Java source from the database, compiling it, and returning a
+ * runnable transformation.
  * 
  * @author ryan
  */
@@ -92,17 +97,15 @@ public class JavaRuntimeFactory implements RuntimeFactory {
 		PRIMITIVE_MAP.put(ByteString.class, "bytes");
 		PRIMITIVE_MAP.put(InputStream.class, "bytes");
 		PRIMITIVE_MAP.put(OutputStream.class, "bytes");
-		PRIMITIVE_MAP.put(BucketOutputStream.class, "bytes");
+		PRIMITIVE_MAP.put(ItemOutputStream.class, "bytes");
 	}
 
 	public static final String COMPILE_DIRECTORY = "build/java";
 
 	public static final String RUNTIME_DIRECTORY = "runtime/java";
 
-	public PullRuntimeTransformation generatePullTransformation(RuntimeConfiguration config,
-			RuntimeTransformationNode runtime) throws TransformationException {
-
-		Transformation transformation = runtime.getTransformationNode().getTransformation();
+	public PullRuntimeTransformation generatePullTransformation(Transformation transformation)
+			throws TransformationException {
 
 		// Write out the Java source
 		String className = transformation.getName();
@@ -121,7 +124,7 @@ public class JavaRuntimeFactory implements RuntimeFactory {
 		}
 
 		// Load and wrap the object with a java transformation wrapper
-		return new PullJavaFunction(config, runtime, object);
+		return new PullJavaFunction(object);
 	}
 
 	public Class<?> getClass(String className, Reader source, Iterable<Library> dependencies) throws IOException {
@@ -495,7 +498,7 @@ public class JavaRuntimeFactory implements RuntimeFactory {
 					type = factory.getType(getTypeName(fieldType));
 				} else if (fieldType instanceof ParameterizedType) {
 					ParameterizedType paramType = (ParameterizedType) fieldType;
-					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || BucketOutputStream.class
+					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || ItemOutputStream.class
 							.isAssignableFrom((Class<?>) paramType.getRawType()))
 							&& factory.getType(getTypeName(paramType.getActualTypeArguments()[0])) != null) {
 						type = factory.getType(getTypeName(paramType.getActualTypeArguments()[0]));

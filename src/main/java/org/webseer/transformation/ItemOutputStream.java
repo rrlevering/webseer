@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.OutputGroupGetter;
 import org.webseer.streams.model.trace.DataItem;
 
-public class ItemOutputStream<T> extends OutputStream implements BucketOutputStream<T> {
+public class ItemOutputStream<T> extends OutputStream {
 
 	private OutputGroupGetter groupGetter;
 

@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.webseer.transformation.ImportLibrary;
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;

@@ -33,12 +33,11 @@ import org.webseer.streams.model.trace.ItemView;
 import org.webseer.streams.model.trace.OutputGroup;
 import org.webseer.streams.model.trace.Reference;
 import org.webseer.streams.model.trace.TransformationGroup;
-import org.webseer.transformation.BucketReader;
 import org.webseer.transformation.InputReader;
 import org.webseer.transformation.ItemInputStream;
 import org.webseer.transformation.ItemOutputStream;
-import org.webseer.transformation.LanguageFactory;
 import org.webseer.transformation.PullRuntimeTransformation;
+import org.webseer.transformation.RuntimeTransformationException;
 
 public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 
@@ -206,7 +205,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 	}
 
 	private void addBucketWriter(PullRuntimeTransformation pull, final Bucket bucket) {
-		ItemOutputStream outputStream = new ItemOutputStream(new OutputGroupGetter() {
+		ItemOutputStream<?> outputStream = new ItemOutputStream<Object>(new OutputGroupGetter() {
 
 			@Override
 			public OutputGroup getOutputGroup() {
@@ -242,8 +241,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 			}
 
 			// Get the actual executor
-			LanguageFactory factory = LanguageFactory.getInstance();
-			final PullRuntimeTransformation pull = factory.generatePullTransformation(this, runtimeNode);
+			final PullRuntimeTransformation pull = runtimeNode.getPullTransformation(this);
 
 			for (final Bucket bucket : runtimeNode.getBuckets()) {
 				addBucketWriter(pull, bucket);

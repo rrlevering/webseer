@@ -8,6 +8,9 @@ import org.webseer.visitor.SuperVisitor;
  * output points. The inputs are completely fuzzy and allow us to use the same transformer on multiple models that may
  * not share a similar structure. The outputs are not fuzzy and adhere to a model spec URI. The system is responsible
  * for assembling a path at runtime that defines how models flow through a series of transformations.
+ * <p>
+ * With push transformations, the pattern is more like a listener pattern. When appropriate data has been assembled for
+ * the transformation, it automatically executes.
  * 
  * @author Ryan Levering
  */
@@ -16,14 +19,16 @@ public interface PushRuntimeTransformation {
 	/**
 	 * Adds a listener to the transformation. This is what is used to detect generated models.
 	 * 
-	 * @param listener the listener that gets notified of new outputs
+	 * @param listener
+	 *            the listener that gets notified of new outputs
 	 */
 	public void addOutputChannel(String outputPoint, SuperVisitor listener);
 
 	/**
 	 * Gets the visitor for a particular input point of the transformation.
 	 * 
-	 * @param inputPoint the input point to get the visitor for
+	 * @param inputPoint
+	 *            the input point to get the visitor for
 	 * @return the visitor that is responsible for handling a certain type of input
 	 */
 	public SuperVisitor getInputChannel(String inputPoint);

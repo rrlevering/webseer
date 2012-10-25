@@ -6,10 +6,10 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.webseer.transformation.BucketOutputStream;
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
+import org.webseer.transformation.ItemOutputStream;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 /**
  * Returns lines that match a certain regex pattern.
@@ -23,7 +23,7 @@ public class Grep implements JavaFunction {
 	private String pattern;
 
 	@OutputChannel
-	public BucketOutputStream<String> lines;
+	public ItemOutputStream<String> lines;
 
 	@Override
 	public void execute() throws Throwable {

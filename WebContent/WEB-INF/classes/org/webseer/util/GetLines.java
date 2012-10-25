@@ -5,8 +5,8 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 import com.google.protobuf.ByteString;
 

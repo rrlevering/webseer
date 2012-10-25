@@ -1,8 +1,8 @@
 package org.webseer.test;
 
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 public class JoinStrings implements JavaFunction {
 

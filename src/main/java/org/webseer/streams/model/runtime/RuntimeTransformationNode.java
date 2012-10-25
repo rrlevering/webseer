@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
+import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.streams.model.program.DisconnectedWorkspaceBucketNode;
 import org.webseer.streams.model.program.Neo4JProgramUtils;
@@ -19,6 +20,7 @@ import org.webseer.streams.model.trace.Bucket;
 import org.webseer.streams.model.trace.TransformationGroup;
 import org.webseer.transformation.LanguageFactory;
 import org.webseer.transformation.PullRuntimeTransformation;
+import org.webseer.transformation.TransformationListener;
 
 /**
  * Runtime transformation node is used for the actual runtime structure of a transformation graph. Transformation graphs
@@ -63,9 +65,31 @@ public class RuntimeTransformationNode {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public PullRuntimeTransformation getPullTransformation(RuntimeConfiguration config) throws TransformationException {
+	public PullRuntimeTransformation getPullTransformation(final RuntimeConfiguration config) throws TransformationException {
 		LanguageFactory factory = LanguageFactory.getInstance();
-		return factory.generatePullTransformation(config, this);
+		final Transformation transformation = getTransformationNode().getTransformation();
+		PullRuntimeTransformation runtimeTransformation = factory.generatePullTransformation(transformation);
+		runtimeTransformation.addListener(new TransformationListener() {
+
+			@Override
+			public void init() {
+				config.initRunning(RuntimeTransformationNode.this);
+			}
+
+			@Override
+			public void start() {
+				config.startRunning(RuntimeTransformationNode.this);
+			}
+
+			@Override
+			public void end() {
+				config.endRunning(RuntimeTransformationNode.this);
+				System.out.println("Transformed " + transformation.getName());
+			}
+			
+		});
+		
+		return runtimeTransformation;
 	}
 
 	/**

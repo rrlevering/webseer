@@ -11,10 +11,10 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.webseer.transformation.BucketOutputStream;
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
+import org.webseer.transformation.ItemOutputStream;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 import com.csvreader.CsvReader;
 import com.google.protobuf.ByteString;
@@ -44,7 +44,7 @@ import com.google.protobuf.ByteString;
 public class UploadHTMLArchive implements JavaFunction {
 
 	@OutputChannel
-	public BucketOutputStream<DocumentView> documents;
+	public ItemOutputStream<DocumentView> documents;
 
 	@InputChannel
 	public InputStream file;

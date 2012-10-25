@@ -1,7 +1,6 @@
 package org.webseer.transformation;
 
 import org.webseer.model.meta.TransformationException;
-import org.webseer.streams.model.runtime.RuntimeTransformationException;
 
 /**
  * Transformers are at the core of webseer and define its power. Think of a transformer as a document transformation
@@ -40,5 +39,10 @@ public interface PullRuntimeTransformation {
 	 * @throws TransformationException
 	 */
 	public void addInputChannel(String inputPoint, InputReader items) throws TransformationException;
+	
+	/**
+	 * Adds a listener that gets notifications when the transformation is initializing, running, and done.
+	 */
+	public void addListener(TransformationListener listener);
 
 }

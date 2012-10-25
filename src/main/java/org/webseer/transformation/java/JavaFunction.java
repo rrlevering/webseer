@@ -1,4 +1,4 @@
-package org.webseer.transformation;
+package org.webseer.transformation.java;
 
 /**
  * This is an interface that is used to work with simple java functional objects.

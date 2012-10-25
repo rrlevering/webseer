@@ -3,7 +3,6 @@ package org.webseer.web.beans;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.OutputPoint;
 import org.webseer.model.meta.Transformation;
-import org.webseer.transformation.OutputDefinition;
 
 public class OutputBean {
 
@@ -24,13 +23,6 @@ public class OutputBean {
 		this.nodeId = Neo4JMetaUtils.getNode(transformation).getId();
 		this.label = output.getName();
 		this.type = output.getType().getName();
-	}
-
-	public OutputBean(String key, OutputDefinition value) {
-		this.outputPointId = -1;
-		this.nodeId = -1;
-		this.label = key;
-		this.type = value.getModel().toString();
 	}
 
 	public long getOutputPointId() {

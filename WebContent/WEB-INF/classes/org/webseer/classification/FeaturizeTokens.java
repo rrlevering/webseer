@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.JavaFunction;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.java.JavaFunction;
 
 public class FeaturizeTokens implements JavaFunction {
 

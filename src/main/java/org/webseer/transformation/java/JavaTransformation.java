@@ -1,16 +1,22 @@
-package org.webseer.transformation;
+package org.webseer.transformation.java;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.TransformationException;
-import org.webseer.streams.model.runtime.RuntimeTransformationNode;
+import org.webseer.transformation.InputChannel;
+import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.PushRuntimeTransformation;
 import org.webseer.visitor.AggregateSuperVisitor;
 import org.webseer.visitor.ReflectiveSuperVisitor;
 import org.webseer.visitor.SuperVisitor;
 
 public abstract class JavaTransformation implements PushRuntimeTransformation {
+
+	private static final Logger log = LoggerFactory.getLogger(JavaTransformation.class);
 
 	private Map<String, AggregateSuperVisitor<SuperVisitor>> listeners = new HashMap<String, AggregateSuperVisitor<SuperVisitor>>();
 
@@ -140,8 +146,7 @@ public abstract class JavaTransformation implements PushRuntimeTransformation {
 							field.setInt(JavaTransformation.this, Integer.parseInt((String) o));
 						}
 					} else {
-						RuntimeTransformationNode.LOG.debug("Cannot assign object of type %1 to field of type %2",
-								o.getClass(), field.getType());
+						log.debug("Cannot assign object of type %1 to field of type %2", o.getClass(), field.getType());
 					}
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();

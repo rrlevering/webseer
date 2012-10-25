@@ -9,8 +9,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.Type;
-import org.webseer.streams.model.runtime.RuntimeConfiguration;
-import org.webseer.streams.model.runtime.RuntimeTransformationNode;
+import org.webseer.transformation.java.JavaRuntimeFactory;
 
 public class LanguageFactory {
 
@@ -34,10 +33,9 @@ public class LanguageFactory {
 		return languages.get(language).generateTransformation(service, qualifiedName, reader, version);
 	}
 
-	public PullRuntimeTransformation generatePullTransformation(RuntimeConfiguration config,
-			RuntimeTransformationNode runtime) throws TransformationException {
-		return languages.get(runtime.getTransformationNode().getTransformation().getLanguage())
-				.generatePullTransformation(config, runtime);
+	public PullRuntimeTransformation generatePullTransformation(Transformation transformation)
+			throws TransformationException {
+		return languages.get(transformation.getLanguage()).generatePullTransformation(transformation);
 	}
 
 	public Type generateType(String language, GraphDatabaseService service, String qualifiedName, Reader reader,

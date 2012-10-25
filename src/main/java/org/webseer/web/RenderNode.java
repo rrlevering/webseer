@@ -15,9 +15,9 @@ import org.webseer.model.meta.TransformationException;
 import org.webseer.streams.model.Workspace;
 import org.webseer.streams.model.program.TransformationGraph;
 import org.webseer.streams.model.program.TransformationNode;
+import org.webseer.streams.model.runtime.BucketReader;
 import org.webseer.streams.model.runtime.RuntimeConfiguration;
 import org.webseer.streams.model.trace.Item;
-import org.webseer.transformation.BucketReader;
 
 import com.google.protobuf.ByteString;
 
