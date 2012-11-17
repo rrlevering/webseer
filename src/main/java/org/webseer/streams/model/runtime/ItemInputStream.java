@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.Type;
 import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.InputGroupGetter;
 import org.webseer.streams.model.trace.InputGroup;
@@ -22,6 +24,8 @@ import org.webseer.type.TypeFactory;
  * @author ryan
  */
 public class ItemInputStream extends InputStream implements Iterator<Object> {
+
+	private static final Logger log = LoggerFactory.getLogger(ItemInputStream.class);
 
 	private final Iterator<ItemView> underlyingItems;
 
@@ -143,7 +147,7 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 
 		currentItem = underlyingItems.next();
 		if (inputGroup != null) {
-			System.out.println("Advancing input group");
+			log.info("Advancing input group");
 			inputGroup.advance();
 		}
 		try {

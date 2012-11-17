@@ -32,12 +32,12 @@
 		<set name="itemId">$1</set>
 	</rule>
 	<rule>
-		<from>/transformation/(.+)</from>
+		<from>/transformation/([^\?]+)$</from>
 		<to>/transformation</to>
 		<set name="transformationPath">$1</set>
 	</rule>
 	<rule>
-		<from>/transformation/([^\.]+)\.([0-9]+)</from>
+		<from>/transformation/([^\.?]+)\.([0-9]+)$</from>
 		<to>/transformation</to>
 		<set name="transformationPath">$1</set>
 		<set name="version">$2</set>

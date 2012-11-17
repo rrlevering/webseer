@@ -84,7 +84,7 @@ public class RuntimeTransformationNode {
 			@Override
 			public void end() {
 				config.endRunning(RuntimeTransformationNode.this);
-				System.out.println("Transformed " + transformation.getName());
+				LOG.info("Transformed " + transformation.getName());
 			}
 			
 		});
@@ -167,7 +167,7 @@ public class RuntimeTransformationNode {
 	}
 
 	public void delete() {
-		System.out.println("Deleting runtime node");
+		LOG.info("Deleting runtime node");
 
 		// Check the transformation level for deletes
 		TransformationNode node = getTransformationNode();
@@ -180,7 +180,7 @@ public class RuntimeTransformationNode {
 		}
 
 		for (Relationship rel : underlyingNode.getRelationships()) {
-			System.out.println(rel.getType());
+			LOG.info("Deleting relationship " + rel.getType());
 			rel.delete();
 		}
 		underlyingNode.delete();

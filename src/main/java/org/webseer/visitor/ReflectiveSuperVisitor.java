@@ -206,7 +206,6 @@ public class ReflectiveSuperVisitor extends AbstractStoppableVisitor implements 
 		while (!ancestors.isEmpty()) {
 			Class<?> ancestorClass = ancestors.remove(0);
 			if (visitors.containsKey(ancestorClass)) {
-				// System.out.println("Found " + ancestorClass + " for " + dataClass);
 				return visitors.get(ancestorClass);
 			}
 			if (ancestorClass.getSuperclass() != null) {

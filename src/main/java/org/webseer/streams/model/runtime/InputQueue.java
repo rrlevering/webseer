@@ -6,6 +6,8 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.streams.model.program.Neo4JProgramUtils;
@@ -19,6 +21,8 @@ import org.webseer.streams.model.trace.ItemView;
  * that it draws from.
  */
 public class InputQueue {
+
+	private static final Logger log = LoggerFactory.getLogger(InputQueue.class);
 
 	private final Node underlyingNode;
 
@@ -85,9 +89,9 @@ public class InputQueue {
 	}
 
 	public void delete() {
-		System.out.println("Deleting input queue");
+		log.info("Deleting input queue");
 		for (Relationship rel : underlyingNode.getRelationships()) {
-			System.out.println(rel.getType());
+			log.info("Deleting input queue relationship: " + rel.getType());
 			rel.delete();
 		}
 		underlyingNode.delete();

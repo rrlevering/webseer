@@ -60,4 +60,12 @@
 <script>
 prettyPrint();
 </script>
+<form method="post">
+<table>
+<c:forEach var="inputPoint" items="${transformation.inputPoints.iterator()}" varStatus="loop">
+	<tr><td>${inputPoint.name}:</td><td><textarea name="${inputPoint.name}"></textarea></td></tr>
+</c:forEach>
+<tr><td colspan="2"><input type="submit" name="Transform" /></td></tr>
+</table>
+</form>
 <jsp:include page="includes/footer.jsp" />

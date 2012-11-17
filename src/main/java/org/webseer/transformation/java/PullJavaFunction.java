@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.transformation.InputReader;
 import org.webseer.transformation.OutputWriter;
@@ -29,6 +31,8 @@ import com.google.common.collect.Lists;
  * @author ryan
  */
 public class PullJavaFunction implements PullRuntimeTransformation {
+
+	private static final Logger log = LoggerFactory.getLogger(PullJavaFunction.class);
 
 	private final JavaFunction object;
 
@@ -64,7 +68,7 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 			for (Entry<String, List<Iterator<Object>>> entry : inputs.entrySet()) {
 				for (Iterator<Object> vararg : entry.getValue()) {
 					if (vararg.hasNext()) {
-						System.out.println("More in " + entry.getKey());
+						log.info("More in %0", entry.getKey());
 						needsAdvance = true;
 					}
 				}
@@ -143,8 +147,9 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 						inputs.put(input, list);
 					}
 					if (currentStream.hasNext()) {
-						System.out.println("Setting " + f.getName());
-						f.set(current, currentStream.next());
+						Object value = currentStream.next();
+						log.info("Setting {} to {}", f.getName(), value);
+						f.set(current, value);
 					}
 				}
 			} catch (SecurityException e) {
@@ -212,7 +217,7 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 			} catch (IllegalAccessException e) {
 				throw new TransformationException("Problem getting fields", e);
 			}
-			System.out.println("Output = " + value);
+			log.info("Output = {}", value);
 
 			if (value != null) {
 				@SuppressWarnings("rawtypes")

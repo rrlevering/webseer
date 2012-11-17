@@ -11,7 +11,7 @@ public class LogoutServlet extends SeerServlet {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void nontransactionalizedService(HttpServletRequest request, HttpServletResponse response)
+	public void nontransactionalizedGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		request.getSession().removeAttribute("user");
 		response.sendRedirect("index");

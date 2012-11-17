@@ -15,6 +15,8 @@ import name.levering.ryan.util.Pair;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.Type;
 import org.webseer.streams.model.PreviewBuffer;
@@ -39,6 +41,8 @@ import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.RuntimeTransformationException;
 
 public class RuntimeConfigurationImpl implements RuntimeConfiguration {
+
+	private static final Logger log = LoggerFactory.getLogger(RuntimeConfigurationImpl.class);
 
 	private final GraphDatabaseService service;
 	private final Workspace workspace;
@@ -88,12 +92,12 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 
 	public void fill(WorkspaceBucketNode node) throws TransformationException {
 		if (node.getInputs().iterator().next().getIncomingEdge() == null) {
-			System.out.println("Can't fill something with no connections");
+			log.info("Can't fill something with no connections");
 			// Nothing to pull from
 			return;
 		}
 
-		System.out.println("Filling bucket");
+		log.info("Filling bucket");
 
 		DisconnectedWorkspaceBucketNode cloned = new DisconnectedWorkspaceBucketNode(new WorkspaceBucketNode(service,
 				null, node.getLinkedBucket()));

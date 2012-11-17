@@ -16,7 +16,7 @@ public abstract class WorkspaceServlet extends SeerServlet {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected void nontransactionalizedService(HttpServletRequest req, HttpServletResponse resp)
+	protected void nontransactionalizedGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		String workspaceId = (String) getRequiredAttribute(req, "workspaceId");
 

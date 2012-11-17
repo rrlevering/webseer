@@ -281,12 +281,12 @@ public class JavaRuntimeFactory implements RuntimeFactory {
 		@Override
 		protected Class<?> findClass(String name) throws ClassNotFoundException {
 			JavaFileObject jfo = output.get(name);
-			System.out.println("Looking for " + name);
+			log.info("Looking for " + name);
 			if (jfo != null) {
 				byte[] bytes = ((MemoryJavaFileObject) jfo).output.toByteArray();
 				return defineClass(name, bytes, 0, bytes.length);
 			}
-			System.out.println("Looking in super classloader");
+			log.info("Looking in super classloader");
 			return super.findClass(name);
 		}
 	}
@@ -352,7 +352,6 @@ public class JavaRuntimeFactory implements RuntimeFactory {
 					try {
 						JarEntry entry;
 						while ((entry = jarIn.getNextJarEntry()) != null) {
-							// System.out.println(entry.getName());
 							if (entry.getName().startsWith(pkg.replaceAll("\\.", "/"))) {
 								String rest = entry.getName().substring(pkg.length() + 1);
 								if (rest.indexOf('/') < 0 && rest.indexOf('$') < 0 && rest.endsWith(".class")) {

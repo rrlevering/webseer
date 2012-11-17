@@ -19,14 +19,14 @@ import org.webseer.web.beans.UserBean;
 public abstract class SeerServlet extends HttpServlet {
 
 	private static final Logger log = Logger.getLogger(SeerServlet.class.getName());
-	
+
 	private static final long serialVersionUID = 1L;
 
 	public GraphDatabaseService getNeoService() {
 		GraphDatabaseService service = (GraphDatabaseService) getServletContext().getAttribute("neoService");
 		if (service == null) {
-			String dbDir = new File(WebseerConfiguration.getWebseerRoot(), WebseerConfiguration
-					.getConfiguration().getString("WEBSEER_DB_DIR")).getAbsolutePath();
+			String dbDir = new File(WebseerConfiguration.getWebseerRoot(), WebseerConfiguration.getConfiguration()
+					.getString("WEBSEER_DB_DIR")).getAbsolutePath();
 			service = new EmbeddedGraphDatabase(dbDir);
 			getServletContext().setAttribute("neoService", service);
 			log.info("Starting webseer with db at " + dbDir);
@@ -36,12 +36,12 @@ public abstract class SeerServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		nontransactionalizedService(req, resp);
+		nontransactionalizedGet(req, resp);
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		nontransactionalizedService(req, resp);
+		nontransactionalizedPost(req, resp);
 	}
 
 	protected String getRequiredParameter(HttpServletRequest req, String parameterName) throws ServletException {
@@ -69,16 +69,38 @@ public abstract class SeerServlet extends HttpServlet {
 		return currentUser != null && currentUser.getLogin().equals(user.getLogin());
 	}
 
-	protected void nontransactionalizedService(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+	protected void nontransactionalizedGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+			IOException {
 		GraphDatabaseService service = getNeoService();
 		Transaction tran = service.beginTx();
 		try {
-			transactionalizedService(req, resp);
+			transactionalizedGet(req, resp);
 			tran.success();
 		} finally {
 			tran.finish();
 		}
+	}
+
+	protected void nontransactionalizedPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+			IOException {
+		GraphDatabaseService service = getNeoService();
+		Transaction tran = service.beginTx();
+		try {
+			transactionalizedPost(req, resp);
+			tran.success();
+		} finally {
+			tran.finish();
+		}
+	}
+
+	protected void transactionalizedGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+			IOException {
+		transactionalizedService(req, resp);
+	}
+
+	protected void transactionalizedPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+			IOException {
+		transactionalizedService(req, resp);
 	}
 
 	protected void transactionalizedService(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
