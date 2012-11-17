@@ -7,8 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.ItemOutputStream;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.OutputWriter;
 import org.webseer.transformation.java.JavaFunction;
 
 /**
@@ -23,7 +23,7 @@ public class Grep implements JavaFunction {
 	private String pattern;
 
 	@OutputChannel
-	public ItemOutputStream<String> lines;
+	public OutputWriter<String> lines;
 
 	@Override
 	public void execute() throws Throwable {

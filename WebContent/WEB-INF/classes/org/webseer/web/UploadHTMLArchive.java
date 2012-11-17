@@ -12,8 +12,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.ItemOutputStream;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.OutputWriter;
 import org.webseer.transformation.java.JavaFunction;
 
 import com.csvreader.CsvReader;
@@ -44,7 +44,7 @@ import com.google.protobuf.ByteString;
 public class UploadHTMLArchive implements JavaFunction {
 
 	@OutputChannel
-	public ItemOutputStream<DocumentView> documents;
+	public OutputWriter<DocumentView> documents;
 
 	@InputChannel
 	public InputStream file;

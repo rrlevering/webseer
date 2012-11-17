@@ -34,8 +34,7 @@ import org.webseer.streams.model.trace.OutputGroup;
 import org.webseer.streams.model.trace.Reference;
 import org.webseer.streams.model.trace.TransformationGroup;
 import org.webseer.transformation.InputReader;
-import org.webseer.transformation.ItemInputStream;
-import org.webseer.transformation.ItemOutputStream;
+import org.webseer.transformation.InputReaders;
 import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.RuntimeTransformationException;
 
@@ -106,7 +105,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 		TransformationEdge newEdge = TransformationGraph.createRuntimeGraph(service, source, cloned, cloned.getInputs()
 				.iterator().next().getInputField().getName(), new HashMap<Node, Node>());
 
-		InputReader queue = getInputReader(newEdge, cloned);
+		InputReaderImpl queue = getInputReader(newEdge, cloned);
 		Iterator<ItemView> stream = queue.getViews();
 
 		// Start a transformation group for this fill
@@ -148,7 +147,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 		return outputQueues;
 	}
 
-	public InputReader getInputReader(TransformationEdge edge, DisconnectedWorkspaceBucketNode targetNode)
+	public InputReaderImpl getInputReader(TransformationEdge edge, DisconnectedWorkspaceBucketNode targetNode)
 			throws TransformationException {
 		Map<TransformationNode, Pair<RuntimeTransformationNode, PullRuntimeTransformation>> runtimeStack = new HashMap<TransformationNode, Pair<RuntimeTransformationNode, PullRuntimeTransformation>>();
 		Pair<RuntimeTransformationNode, PullRuntimeTransformation> runtime = createRuntimeNode(edge.getOutput()
@@ -257,7 +256,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 						pull.addInputChannel(input.getInputField().getName(), new TransformationNodeInputReader(input,
 								runtimeNode));
 					} else {
-						pull.addInputChannel(input.getInputField().getName(), new EmptyInputReader());
+						pull.addInputChannel(input.getInputField().getName(), InputReaders.getEmptyReader());
 					}
 				} else {
 					final InputReader reader = getInputReader(input.getIncomingEdge(), runtimeNode);
@@ -397,6 +396,9 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 
 	}
 
+	/**
+	 * Input reader that reads from configuration/hard-coded values on a transformation node.
+	 */
 	private class TransformationNodeInputReader implements InputReader {
 
 		private TransformationNodeInput input;
@@ -428,7 +430,6 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 			});
 		}
 
-		@Override
 		public Iterator<ItemView> getViews() {
 			return new Iterator<ItemView>() {
 
@@ -461,32 +462,11 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 			};
 		}
 
-		@Override
-		public InputQueue getQueue() {
-			return queue;
-		}
-
 	}
 
-	private class EmptyInputReader implements InputReader {
-
-		@Override
-		public ItemInputStream getInputStream() {
-			return new ItemInputStream();
-		}
-
-		@Override
-		public Iterator<ItemView> getViews() {
-			return new ArrayList<ItemView>().iterator();
-		}
-
-		@Override
-		public InputQueue getQueue() {
-			return null;
-		}
-
-	}
-
+	/**
+	 * Input reader to read from the input queue in a normal runtime transformation path.
+	 */
 	private class InputReaderImpl implements InputReader {
 
 		private final Type targetType;
@@ -512,7 +492,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 
 				@Override
 				public InputGroup getInputGroup() {
-					return getCurrentInputGroup(targetNode, getQueue().getInput());
+					return getCurrentInputGroup(targetNode, queue.getInput());
 				}
 
 				@Override
@@ -523,15 +503,9 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 			});
 		}
 
-		@Override
 		public Iterator<ItemView> getViews() {
 			return new OnDemandIterator(queue, reader.getItems(), edge.getLinkedPoint(), edge.getOutputField(),
 					targetNode, edge.getInput());
-		}
-
-		@Override
-		public InputQueue getQueue() {
-			return queue;
 		}
 	}
 
@@ -727,7 +701,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 		TransformationNodeInput input = cloned.getInputs().iterator().next();
 		TransformationEdge source = input.getIncomingEdge();
 
-		InputReader queue = getInputReader(source, cloned);
+		InputReaderImpl queue = getInputReader(source, cloned);
 		Iterator<ItemView> stream = queue.getViews();
 
 		// Start a transformation group for this fill

@@ -1,6 +1,5 @@
 package org.webseer.transformation.java;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -16,8 +15,7 @@ import java.util.Map.Entry;
 
 import org.webseer.model.meta.TransformationException;
 import org.webseer.transformation.InputReader;
-import org.webseer.transformation.ItemInputStream;
-import org.webseer.transformation.ItemOutputStream;
+import org.webseer.transformation.OutputWriter;
 import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.RuntimeTransformationException;
 import org.webseer.transformation.TransformationListener;
@@ -34,11 +32,11 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 
 	private final JavaFunction object;
 
-	private final Map<String, List<ItemInputStream>> inputs = new HashMap<String, List<ItemInputStream>>();
+	private final Map<String, List<Iterator<Object>>> inputs = new HashMap<String, List<Iterator<Object>>>();
 
 	private final Map<String, InputReader> readers = new HashMap<String, InputReader>();
 
-	private final Map<String, ItemOutputStream<?>> outputs = new HashMap<String, ItemOutputStream<?>>();
+	private final Map<String, OutputWriter<?>> outputs = new HashMap<String, OutputWriter<?>>();
 	
 	private final List<TransformationListener> listeners = Lists.newArrayList();
 
@@ -63,8 +61,8 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 			needsAdvance = true;
 		} else {
 			// Try a new input
-			for (Entry<String, List<ItemInputStream>> entry : inputs.entrySet()) {
-				for (ItemInputStream vararg : entry.getValue()) {
+			for (Entry<String, List<Iterator<Object>>> entry : inputs.entrySet()) {
+				for (Iterator<Object> vararg : entry.getValue()) {
 					if (vararg.hasNext()) {
 						System.out.println("More in " + entry.getKey());
 						needsAdvance = true;
@@ -119,8 +117,8 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 					// }
 					// f.set(current, streams);
 				} else if (type.equals(InputStream.class)) {
-					ItemInputStream inputStream = readers.get(input).getInputStream();
-					inputStream.nextItem();
+					Iterator<Object> inputStream = readers.get(input).getInputStream();
+					inputStream.next();
 					f.set(current, inputStream);
 				} else if (type instanceof ParameterizedType) {
 					ParameterizedType paramType = (ParameterizedType) type;
@@ -137,10 +135,10 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 						});
 					}
 				} else {
-					ItemInputStream currentStream = inputs.containsKey(input) ? inputs.get(input).get(0) : null;
+					Iterator<Object> currentStream = inputs.containsKey(input) ? inputs.get(input).get(0) : null;
 					if (currentStream == null) {
 						currentStream = readers.get(input).getInputStream();
-						List<ItemInputStream> list = new ArrayList<ItemInputStream>();
+						List<Iterator<Object>> list = new ArrayList<Iterator<Object>>();
 						list.add(currentStream);
 						inputs.put(input, list);
 					}
@@ -166,7 +164,7 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 		for (String outputPoint : outputs.keySet()) {
 			try {
 				Field f = objectClass.getDeclaredField(outputPoint);
-				if (ItemOutputStream.class.isAssignableFrom(f.getType())) {
+				if (OutputWriter.class.isAssignableFrom(f.getType())) {
 					f.setAccessible(true);
 					f.set(object, outputs.get(outputPoint));
 				} else if (!f.getType().isPrimitive()) {
@@ -218,7 +216,7 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 
 			if (value != null) {
 				@SuppressWarnings("rawtypes")
-				ItemOutputStream valueList = outputs.get(outputPoint);
+				OutputWriter valueList = outputs.get(outputPoint);
 				if (value instanceof Iterable) {
 					for (Object object : ((Iterable<?>) value)) {
 						valueList.writeObject(object);
@@ -233,7 +231,7 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 	}
 
 	@Override
-	public void addOutputChannel(String outputPoint, ItemOutputStream<?> output) {
+	public void addOutputChannel(String outputPoint, OutputWriter<?> output) {
 		outputs.put(outputPoint, output);
 	}
 

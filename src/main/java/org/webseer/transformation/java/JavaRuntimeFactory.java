@@ -61,9 +61,9 @@ import org.webseer.model.meta.TransformationField;
 import org.webseer.model.meta.Type;
 import org.webseer.transformation.FunctionDef;
 import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.ItemOutputStream;
 import org.webseer.transformation.LibraryFactory;
 import org.webseer.transformation.OutputChannel;
+import org.webseer.transformation.OutputWriter;
 import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.RuntimeFactory;
 import org.webseer.type.TypeFactory;
@@ -97,7 +97,7 @@ public class JavaRuntimeFactory implements RuntimeFactory {
 		PRIMITIVE_MAP.put(ByteString.class, "bytes");
 		PRIMITIVE_MAP.put(InputStream.class, "bytes");
 		PRIMITIVE_MAP.put(OutputStream.class, "bytes");
-		PRIMITIVE_MAP.put(ItemOutputStream.class, "bytes");
+		PRIMITIVE_MAP.put(OutputWriter.class, "bytes");
 	}
 
 	public static final String COMPILE_DIRECTORY = "build/java";
@@ -498,7 +498,7 @@ public class JavaRuntimeFactory implements RuntimeFactory {
 					type = factory.getType(getTypeName(fieldType));
 				} else if (fieldType instanceof ParameterizedType) {
 					ParameterizedType paramType = (ParameterizedType) fieldType;
-					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || ItemOutputStream.class
+					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || OutputWriter.class
 							.isAssignableFrom((Class<?>) paramType.getRawType()))
 							&& factory.getType(getTypeName(paramType.getActualTypeArguments()[0])) != null) {
 						type = factory.getType(getTypeName(paramType.getActualTypeArguments()[0]));

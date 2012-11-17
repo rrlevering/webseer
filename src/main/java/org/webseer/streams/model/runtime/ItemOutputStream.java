@@ -1,14 +1,15 @@
-package org.webseer.transformation;
+package org.webseer.streams.model.runtime;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
 import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.OutputGroupGetter;
 import org.webseer.streams.model.trace.DataItem;
+import org.webseer.transformation.OutputWriter;
 
-public class ItemOutputStream<T> extends OutputStream {
+public class ItemOutputStream<T> extends OutputStream implements OutputWriter<T> {
 
-	private OutputGroupGetter groupGetter;
+	private final OutputGroupGetter groupGetter;
 
 	private OutputStream currentStream;
 

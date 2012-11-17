@@ -1,10 +1,9 @@
-package org.webseer.transformation;
+package org.webseer.streams.model.runtime;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 import org.webseer.model.meta.Type;
 import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.InputGroupGetter;
@@ -24,15 +23,15 @@ import org.webseer.type.TypeFactory;
  */
 public class ItemInputStream extends InputStream implements Iterator<Object> {
 
-	private Iterator<ItemView> underlyingItems;
+	private final Iterator<ItemView> underlyingItems;
+
+	private final Type targetType;
+
+	private final InputGroupGetter getter;
 
 	private ItemView currentItem;
 
 	private InputStream currentStream;
-
-	private Type targetType;
-
-	private InputGroupGetter getter;
 
 	public ItemInputStream(Iterator<ItemView> items, Type targetType, InputGroupGetter getter) {
 		this.underlyingItems = items;
@@ -41,12 +40,15 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 	}
 
 	public ItemInputStream() {
-		List<ItemView> list = Collections.emptyList();
-		this.underlyingItems = list.iterator();
+		this.underlyingItems = Collections.<ItemView>emptyList().iterator();
+		this.targetType = null;
+		this.getter = null;
 	}
 
 	public ItemInputStream(Iterator<ItemView> items) {
 		this.underlyingItems = items;
+		this.targetType = null;
+		this.getter = null;
 	}
 
 	private InputStream createStream() {
@@ -99,11 +101,17 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 	public long skip(long n) throws IOException {
 		return createStream().skip(n);
 	}
-
-	public Object getCurrent() {
+	
+	public ItemView getCurrentView() {
 		if (currentItem == null) {
 			throw new IllegalStateException();
 		}
+		
+		return currentItem;
+	}
+
+	public Object getCurrent() {
+		ItemView currentItem = getCurrentView();
 
 		if (targetType == null) {
 			return currentItem.get();
@@ -122,6 +130,11 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 	}
 
 	public Object next() {
+		nextView();
+		return getCurrent();
+	}
+	
+	public ItemView nextView() {
 		if (!underlyingItems.hasNext()) {
 			throw new IllegalStateException();
 		}
@@ -141,32 +154,7 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return getCurrent();
-	}
-
-	public boolean nextItem() {
-		if (!underlyingItems.hasNext()) {
-			return false;
-		}
-
-		InputGroup inputGroup = getter.getInputGroup();
-
-		currentItem = underlyingItems.next();
-		if (inputGroup != null) {
-			System.out.println("Advancing input group");
-			inputGroup.advance();
-		}
-
-		try {
-			if (currentStream != null) {
-				currentStream.close();
-				currentStream = null;
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return true;
+		return currentItem;
 	}
 
 	@Override
