@@ -20,7 +20,6 @@ import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Library;
 import org.webseer.model.meta.Neo4JMetaUtils;
-import org.webseer.transformation.java.JavaRuntimeFactory;
 
 public class LibraryFactory {
 
@@ -106,7 +105,7 @@ public class LibraryFactory {
 					"/workspaces/webseer/webseer/WebContent/WEB-INF/lib");
 
 			// Load the builtin jar registry
-			InputStream registryStream = JavaRuntimeFactory.class
+			InputStream registryStream = LibraryFactory.class
 					.getResourceAsStream("/jar-registry");
 			List<String> lines;
 			try {
