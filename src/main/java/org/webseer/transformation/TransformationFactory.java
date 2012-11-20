@@ -1,23 +1,11 @@
 package org.webseer.transformation;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.InputPoint;
@@ -28,8 +16,6 @@ import org.webseer.model.meta.Transformation;
 import org.webseer.type.TypeFactory;
 
 public class TransformationFactory {
-
-	private static final Logger log = LoggerFactory.getLogger(TransformationFactory.class);
 
 	private static Map<GraphDatabaseService, TransformationFactory> SINGLETON = new HashMap<GraphDatabaseService, TransformationFactory>();
 
@@ -63,7 +49,7 @@ public class TransformationFactory {
 					NeoRelationshipType.REFERENCE_TRANSFORMATION_FACTORY, TransformationFactory.class);
 			SINGLETON.put(service, factory);
 			if (bootstrap) {
-				factory.bootstrapBuiltins(service);
+				Bootstrapper.bootstrapBuiltins(service);
 			}
 			return factory;
 		}
@@ -120,8 +106,6 @@ public class TransformationFactory {
 		return ((TransformationFactory) o).getUnderlyingNode().equals(underlyingNode);
 	}
 
-	private final static String BUILTIN_DIR = "org/webseer";
-
 	public Transformation getBucketTransformation(GraphDatabaseService service) {
 		if (Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.TRANSFORMATION_FACTORY_BUCKET,
 				Transformation.class) == null) {
@@ -136,105 +120,5 @@ public class TransformationFactory {
 				Transformation.class);
 	}
 
-	private void bootstrapBuiltins(GraphDatabaseService service) {
-		Set<Transformation> blah = new HashSet<Transformation>();
-		for (Transformation transformation : getAllTransformations()) {
-			blah.add(transformation);
-		}
-		for (Transformation transformation : blah) {
-			log.info("Removing transformation: " + transformation.getName());
-			removeTransformation(transformation);
-		}
-
-		// Add/update all the builtin webseer transformations
-		Transaction tran = service.beginTx();
-		try {
-			URL directory = getClass().getClassLoader().getResource(BUILTIN_DIR);
-			File builtInDir;
-			try {
-				builtInDir = new File(directory.toURI());
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-				return;
-			}
-			Set<String> found = new HashSet<String>();
-			recurBuiltins(service, builtInDir, "org.webseer", found);
-
-			// Remove all the ones we didn't find
-			Set<Transformation> toRemove = new HashSet<Transformation>();
-			for (Transformation transformation : getAllTransformations()) {
-				if (transformation.getPackage().startsWith("org.webseer") && !found.contains(transformation.getName())) {
-					// Remove
-					toRemove.add(transformation);
-				}
-			}
-			for (Transformation transformation : toRemove) {
-				log.info("Removing built-in transformation: " + transformation.getName());
-				removeTransformation(transformation);
-			}
-
-			tran.success();
-		} finally {
-			tran.finish();
-		}
-	}
-
-	private void recurBuiltins(GraphDatabaseService service, File builtInDir, String packageName, Set<String> found) {
-		for (File javaFile : builtInDir.listFiles()) {
-			if (!javaFile.isDirectory()) {
-				int sepPos = javaFile.getName().lastIndexOf('.');
-				if (!javaFile.getName().substring(sepPos + 1).equals("java")) {
-					continue;
-				}
-				String className = javaFile.getName().substring(0, sepPos);
-				String qualifiedName = packageName + "." + className;
-				Transformation trans = getLatestTransformationByName(qualifiedName);
-
-				found.add(qualifiedName);
-
-				try {
-					if (trans == null) {
-						trans = createTransformation(service, qualifiedName, new FileReader(javaFile),
-								javaFile.lastModified());
-						if (trans != null) {
-							addTransformation(trans);
-
-							log.info("Added built-in transformation: " + qualifiedName);
-						}
-					} else {
-						long modified = javaFile.lastModified();
-						if (trans.getVersion() == null || trans.getVersion() < modified) {
-							Transformation newTrans = createTransformation(service, qualifiedName, new FileReader(
-									javaFile), javaFile.lastModified());
-
-							if (newTrans != null) {
-
-								removeTransformation(trans);
-								addTransformation(newTrans);
-
-								log.info("Replaced built-in transformation: " + qualifiedName);
-							}
-						} else {
-							log.info("Found built-in transformation: " + qualifiedName);
-						}
-					}
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} else {
-				recurBuiltins(service, javaFile, packageName.isEmpty() ? javaFile.getName()
-						: (packageName + "." + javaFile.getName()), found);
-			}
-		}
-	}
-
-	private Transformation createTransformation(GraphDatabaseService service, String qualifiedName, Reader reader,
-			long version) throws IOException {
-		return LanguageFactory.getInstance().generateTransformation("Java", service, qualifiedName, reader, version);
-	}
 
 }

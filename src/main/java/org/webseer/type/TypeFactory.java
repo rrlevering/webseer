@@ -1,16 +1,7 @@
 package org.webseer.type;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import name.levering.ryan.util.BiMap;
 import name.levering.ryan.util.HashBiMap;
@@ -19,20 +10,15 @@ import org.apache.commons.lang.ArrayUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.Type;
-import org.webseer.transformation.LanguageFactory;
+import org.webseer.transformation.Bootstrapper;
 
 import com.google.protobuf.ByteString;
 
 public class TypeFactory {
-
-	private static final Logger log = LoggerFactory.getLogger(TypeFactory.class);
 
 	private static final String[] PRIMITIVE_TYPES = new String[] { "bytes", "string", "bool", "sfixed64", "sfixed32",
 			"sfixed64", "fixed64", "fixed32", "sint64", "sint32", "uint64", "uint32", "int64", "int32", "float",
@@ -209,7 +195,7 @@ public class TypeFactory {
 					TypeFactory.class);
 			factory.bootstrapPrimitives(service);
 			if (bootstrap) {
-				factory.bootstrapBuiltins(service);
+				Bootstrapper.bootstrapBuiltins(service);
 			}
 			SINGLETON.put(service, factory);
 		}
@@ -266,103 +252,9 @@ public class TypeFactory {
 		}
 	}
 
-	private final static String BUILTIN_DIR = "org/webseer";
-
-	public void bootstrapBuiltins(GraphDatabaseService service) {
-		// Add/update all the builtin webseer transformations
-		Transaction tran = service.beginTx();
-		try {
-			URL directory = getClass().getClassLoader().getResource(BUILTIN_DIR);
-			File builtInDir;
-			try {
-				builtInDir = new File(directory.toURI());
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-				return;
-			}
-			Set<String> found = new HashSet<String>();
-			recurBuiltins(service, builtInDir, "org.webseer", found);
-
-			// Remove all the ones we didn't find
-			Set<Type> toRemove = new HashSet<Type>();
-			for (Type type : getAllTypes()) {
-				if (type.getPackage().startsWith("org.webseer") && !found.contains(type.getName())) {
-					// Remove
-					toRemove.add(type);
-				}
-			}
-			for (Type type : toRemove) {
-				log.info("Removing type: " + type.getName());
-				removeType(type);
-			}
-
-			tran.success();
-		} finally {
-			tran.finish();
-		}
-	}
-
 	public void removeType(Type type) {
 		Neo4JMetaUtils.getNode(type).getSingleRelationship(NeoRelationshipType.TYPE_FACTORY_TYPE, Direction.INCOMING)
 				.delete();
-	}
-
-	private void recurBuiltins(GraphDatabaseService service, File builtInDir, String packageName, Set<String> found) {
-		for (File javaFile : builtInDir.listFiles()) {
-			if (!javaFile.isDirectory()) {
-				int sepPos = javaFile.getName().lastIndexOf('.');
-				if (!javaFile.getName().substring(sepPos + 1).equals("java")) {
-					continue;
-				}
-				String className = javaFile.getName().substring(0, sepPos);
-				String qualifiedName = packageName + "." + className;
-				Type type = getType(qualifiedName);
-
-				found.add(qualifiedName);
-
-				try {
-					if (type == null) {
-						//FIXME This fails now because it's trying to compile non types without libraries
-						type = createType(service, qualifiedName, new FileReader(javaFile), javaFile.lastModified());
-						if (type != null) {
-							addType(type);
-
-							log.info("Added type: " + qualifiedName);
-						}
-					} else {
-						long modified = javaFile.lastModified();
-						if (type.getVersion() == null || type.getVersion() < modified) {
-							Type newType = createType(service, qualifiedName, new FileReader(javaFile),
-									javaFile.lastModified());
-
-							if (newType != null) {
-
-								removeType(type);
-								addType(newType);
-
-								log.info("Replaced type: " + qualifiedName);
-							}
-						} else {
-							log.info("Found type: " + qualifiedName);
-						}
-					}
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} else {
-				recurBuiltins(service, javaFile, packageName.isEmpty() ? javaFile.getName()
-						: (packageName + "." + javaFile.getName()), found);
-			}
-		}
-	}
-
-	private Type createType(GraphDatabaseService service, String qualifiedName, Reader reader, long version)
-			throws IOException {
-		return LanguageFactory.getInstance().generateType("Java", service, qualifiedName, reader, version);
 	}
 
 	public static interface CastFunction {
