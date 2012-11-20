@@ -13,7 +13,7 @@ import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 import org.webseer.transformation.Bootstrapper;
 
 import com.google.protobuf.ByteString;
@@ -35,7 +35,7 @@ public class TypeFactory {
 	private void bootstrapPrimitives(GraphDatabaseService service) {
 		for (String primitive : PRIMITIVE_TYPES) {
 			if (getType(primitive) == null) {
-				addType(new UserType(service, primitive));
+				addType(new Type(service, primitive));
 			}
 		}
 
@@ -178,7 +178,7 @@ public class TypeFactory {
 		return ArrayUtils.contains(PRIMITIVE_TYPES, type);
 	}
 
-	public void addType(UserType type) {
+	public void addType(Type type) {
 		if (getType(type.getName()) != null) {
 			throw new RuntimeException("Can't add a type with the same name");
 		}
@@ -207,8 +207,8 @@ public class TypeFactory {
 		return this.underlyingNode;
 	}
 
-	public UserType getType(String name) {
-		for (UserType type : getAllTypes()) {
+	public Type getType(String name) {
+		for (Type type : getAllTypes()) {
 			if (type.getName().equals(name)) {
 				return type;
 			}
@@ -216,8 +216,8 @@ public class TypeFactory {
 		return null;
 	}
 
-	public Iterable<UserType> getAllTypes() {
-		return Neo4JUtils.getIterable(underlyingNode, NeoRelationshipType.TYPE_FACTORY_TYPE, UserType.class);
+	public Iterable<Type> getAllTypes() {
+		return Neo4JUtils.getIterable(underlyingNode, NeoRelationshipType.TYPE_FACTORY_TYPE, Type.class);
 	}
 
 	public String toString() {
@@ -235,9 +235,9 @@ public class TypeFactory {
 		return ((TypeFactory) o).getUnderlyingNode().equals(underlyingNode);
 	}
 
-	private BiMap<UserType, UserType, CastFunction> casters = new HashBiMap<UserType, UserType, CastFunction>();
+	private BiMap<Type, Type, CastFunction> casters = new HashBiMap<Type, Type, CastFunction>();
 
-	public Object cast(Object object, UserType sourceType, UserType targetType) {
+	public Object cast(Object object, Type sourceType, Type targetType) {
 		if (sourceType.equals(targetType)) {
 			return object;
 		}
@@ -252,7 +252,7 @@ public class TypeFactory {
 		}
 	}
 
-	public void removeType(UserType type) {
+	public void removeType(Type type) {
 		Neo4JMetaUtils.getNode(type).getSingleRelationship(NeoRelationshipType.TYPE_FACTORY_TYPE, Direction.INCOMING)
 				.delete();
 	}

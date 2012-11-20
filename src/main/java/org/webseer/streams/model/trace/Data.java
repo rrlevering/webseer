@@ -2,13 +2,13 @@ package org.webseer.streams.model.trace;
 
 import java.io.InputStream;
 
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 
 public interface Data {
 
-	UserType getType();
+	Type getType();
 
-	UserType getType(String field);
+	Type getType(String field);
 
 	Object get();
 

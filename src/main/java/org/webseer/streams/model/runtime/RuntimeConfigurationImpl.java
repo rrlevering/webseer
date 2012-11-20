@@ -18,7 +18,7 @@ import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.TransformationException;
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 import org.webseer.streams.model.PreviewBuffer;
 import org.webseer.streams.model.Workspace;
 import org.webseer.streams.model.WorkspaceBucket;
@@ -158,7 +158,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 				.getTransformationNode(), runtimeStack);
 
 		String inputFieldFilter = edge.getInputField();
-		UserType targetType;
+		Type targetType;
 		if (inputFieldFilter == null) {
 			targetType = edge.getInput().getType();
 		} else {
@@ -188,7 +188,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 				.getTransformationNode(), runtimeStack);
 
 		String inputFieldFilter = edge.getInputField();
-		UserType targetType;
+		Type targetType;
 		if (inputFieldFilter == null) {
 			targetType = edge.getInput().getType();
 		} else {
@@ -473,14 +473,14 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 	 */
 	private class InputReaderImpl implements InputReader {
 
-		private final UserType targetType;
+		private final Type targetType;
 		private final RuntimeTransformationNode targetNode;
 
 		private BucketReader reader;
 		private InputQueue queue;
 		private TransformationEdge edge;
 
-		public InputReaderImpl(TransformationEdge edge, BucketReader reader, UserType targetType,
+		public InputReaderImpl(TransformationEdge edge, BucketReader reader, Type targetType,
 				RuntimeTransformationNode targetNode) {
 			this.reader = reader;
 			this.targetType = targetType;

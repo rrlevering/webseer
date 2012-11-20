@@ -6,7 +6,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 
 /**
  * The result of an input filter on an item. You can cast any item back into its context to pull things from earlier in
@@ -64,7 +64,7 @@ public class ItemView {
 		return Neo4JUtils.getString(underlyingNode, "DATA_FIELD");
 	}
 
-	public UserType getType() {
+	public Type getType() {
 		if (getDataField() != null) {
 			return getViewData().getType(getDataField());
 		}

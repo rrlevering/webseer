@@ -23,7 +23,7 @@ import org.webseer.type.TypeFactory;
 
 import com.google.protobuf.ByteString;
 
-public class UserType {
+public class Type {
 
 	private static final String VERSION = "version";
 
@@ -33,16 +33,16 @@ public class UserType {
 
 	private final Node underlyingNode;
 
-	public UserType(GraphDatabaseService service, String string) {
+	public Type(GraphDatabaseService service, String string) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.setProperty(NAME, string);
 	}
 
-	public UserType(Node underlyingNode) {
+	public Type(Node underlyingNode) {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public void addField(GraphDatabaseService service, UserType type, String fieldName, boolean repeated) {
+	public void addField(GraphDatabaseService service, Type type, String fieldName, boolean repeated) {
 		org.webseer.model.meta.Field newField = new org.webseer.model.meta.Field(service, type, fieldName, repeated);
 		Neo4JUtils.addToList(service, underlyingNode, newField.underlyingNode, NeoRelationshipType.TYPE_FIRST_FIELD,
 				NeoRelationshipType.TYPE_LAST_FIELD, NeoRelationshipType.TYPE_FIELD);
@@ -85,7 +85,7 @@ public class UserType {
 		return TypeFactory.isPrimitive(getName());
 	}
 
-	public String getFieldName(UserType type) {
+	public String getFieldName(Type type) {
 		return (String) Neo4JUtils.getListItemProperty(underlyingNode, NeoRelationshipType.TYPE_FIRST_FIELD,
 				NeoRelationshipType.TYPE_FIELD, type.underlyingNode, "fieldName");
 	}
@@ -361,7 +361,7 @@ public class UserType {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		UserType other = (UserType) obj;
+		Type other = (Type) obj;
 		return underlyingNode.equals(other.underlyingNode);
 	}
 
@@ -411,11 +411,11 @@ public class UserType {
 		return current;
 	}
 
-	public UserType getFieldType(String field) {
+	public Type getFieldType(String field) {
 		String[] path = field.split("\\.");
-		UserType current = this;
+		Type current = this;
 		for (int i = 0; i < path.length; i++) {
-			UserType subType = null;
+			Type subType = null;
 			for (org.webseer.model.meta.Field subfield : current.getFields()) {
 				if (subfield.getName().equals(path[i])) {
 					subType = subfield.getType();

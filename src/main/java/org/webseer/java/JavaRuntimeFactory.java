@@ -58,7 +58,7 @@ import org.webseer.model.meta.OutputPoint;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.TransformationField;
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 import org.webseer.transformation.FunctionDef;
 import org.webseer.transformation.InputChannel;
 import org.webseer.transformation.LibraryFactory;
@@ -516,7 +516,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		for (Field field : fields) {
 			if (field.getAnnotation(InputChannel.class) != null) {
 				// An input
-				UserType type;
+				Type type;
 				java.lang.reflect.Type fieldType = field.getGenericType();
 				InputType inputType;
 				boolean varargs;
@@ -566,7 +566,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 
 			} else if (field.getAnnotation(OutputChannel.class) != null) {
 				// An output
-				UserType type;
+				Type type;
 				java.lang.reflect.Type fieldType = field.getGenericType();
 				if (factory.getType(getTypeName(fieldType)) != null) {
 					type = factory.getType(getTypeName(fieldType));
@@ -595,7 +595,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 	}
 
 	private void generateInputPoints(GraphDatabaseService service, Transformation trans, TransformationField parent,
-			UserType type) {
+			Type type) {
 		// Make input points for all the subfields
 		for (org.webseer.model.meta.Field field : type.getFields()) {
 			TransformationField subField = new TransformationField(service, parent, field);
@@ -604,7 +604,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 	}
 
 	private void generateOutputPoints(GraphDatabaseService service, Transformation trans, TransformationField parent,
-			UserType type) {
+			Type type) {
 		// Make input points for all the subfields
 		for (org.webseer.model.meta.Field field : type.getFields()) {
 			TransformationField subField = new TransformationField(service, parent, field);
@@ -613,7 +613,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 	}
 
 	@Override
-	public UserType generateType(GraphDatabaseService service, String qualifiedName, Reader reader, long version)
+	public Type generateType(GraphDatabaseService service, String qualifiedName, Reader reader, long version)
 			throws IOException {
 		TypeFactory factory = TypeFactory.getTypeFactory(service);
 
@@ -627,20 +627,20 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		if (clazz.getAnnotation(org.webseer.type.Type.class) == null) {
 			return null;
 		}
-		UserType type = new UserType(service, qualifiedName);
+		Type type = new Type(service, qualifiedName);
 
 		// Read all the fields
 		Field[] fields = clazz.getFields();
 		for (Field field : fields) {
 			java.lang.reflect.Type fieldType = field.getGenericType();
 			if (factory.getType(getTypeName(fieldType)) != null) {
-				UserType typeObject = factory.getType(getTypeName(fieldType));
+				Type typeObject = factory.getType(getTypeName(fieldType));
 				type.addField(service, typeObject, field.getName(), false);
 			} else if (fieldType instanceof Class<?> && ((Class<?>) fieldType).isArray()) {
 				// Repeated
 				Class<?> componentType = ((Class<?>) fieldType).getComponentType();
 				if (factory.getType(getTypeName(componentType)) != null) {
-					UserType typeObject = factory.getType(getTypeName(componentType));
+					Type typeObject = factory.getType(getTypeName(componentType));
 					type.addField(service, typeObject, field.getName(), true);
 				}
 			}

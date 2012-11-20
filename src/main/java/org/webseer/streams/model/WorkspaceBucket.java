@@ -13,7 +13,7 @@ import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.Neo4JUtils.NodeReader;
 import org.webseer.model.meta.Neo4JMetaUtils;
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 import org.webseer.streams.model.program.WorkspaceBucketNode;
 import org.webseer.streams.model.trace.InputGroup;
 import org.webseer.streams.model.trace.ItemView;
@@ -170,7 +170,7 @@ public class WorkspaceBucket {
 		return total;
 	}
 
-	public void setType(UserType type) {
+	public void setType(Type type) {
 		if (underlyingNode.hasRelationship(NeoRelationshipType.WORKSPACE_BUCKET_TYPE, Direction.OUTGOING)) {
 			underlyingNode.getSingleRelationship(NeoRelationshipType.WORKSPACE_BUCKET_TYPE, Direction.OUTGOING)
 					.delete();
@@ -181,8 +181,8 @@ public class WorkspaceBucket {
 		}
 	}
 
-	public UserType getType() {
-		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.WORKSPACE_BUCKET_TYPE, UserType.class);
+	public Type getType() {
+		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.WORKSPACE_BUCKET_TYPE, Type.class);
 	}
 
 	public void removeAll() {

@@ -11,7 +11,7 @@ import org.webseer.java.JavaRuntimeFactory;
 import org.webseer.model.meta.Library;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 import org.webseer.type.LanguageTypeFactory;
 
 public class LanguageFactory {
@@ -54,7 +54,7 @@ public class LanguageFactory {
 		return transformations.get(transformation.getLanguage()).generatePullTransformation(transformation);
 	}
 
-	public UserType generateType(String language, GraphDatabaseService service, String qualifiedName, Reader reader,
+	public Type generateType(String language, GraphDatabaseService service, String qualifiedName, Reader reader,
 			long version) throws IOException {
 		return types.get(language).generateType(service, qualifiedName, reader, version);
 	}

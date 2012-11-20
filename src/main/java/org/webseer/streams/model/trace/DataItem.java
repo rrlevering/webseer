@@ -9,7 +9,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
-import org.webseer.model.meta.UserType;
+import org.webseer.model.meta.Type;
 
 public class DataItem implements Item, HasValue {
 
@@ -33,7 +33,7 @@ public class DataItem implements Item, HasValue {
 		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.ITEM_OUTPUTGROUP, OutputGroup.class);
 	}
 
-	public UserType getType() {
+	public Type getType() {
 		return getOutputGroup().getBucket().getTransformationNodeOutput().getOutputField().getType();
 	}
 
@@ -94,7 +94,7 @@ public class DataItem implements Item, HasValue {
 	}
 
 	@Override
-	public UserType getType(String field) {
+	public Type getType(String field) {
 		return getOutputGroup().getBucket().getType().getFieldType(field);
 	}
 
