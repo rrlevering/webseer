@@ -64,8 +64,8 @@ public class ViewTransformation extends SeerServlet {
 
 			for (InputPoint input : transformation.getInputPoints()) {
 				String serialized = request.getParameter(input.getName());
-				// Convert to object
-				Object inputObject = serialized;
+				// Convert to correct type from string representation
+				Object inputObject = input.getType().fromString(serialized);
 				inputs.put(input.getName(), inputObject);
 				runtimeTransformation.addInputChannel(input.getName(), InputReaders.getInputReader(inputObject));
 			}

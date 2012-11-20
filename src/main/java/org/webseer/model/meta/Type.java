@@ -113,6 +113,16 @@ public class Type {
 		}
 		return null;
 	}
+	
+	public String toString(Object value) {
+		TypeFactory typeFactory = TypeFactory.getTypeFactory(underlyingNode.getGraphDatabase());
+		return (String) typeFactory.cast(value, this, typeFactory.getType("string"));
+	}
+	
+	public Object fromString(String value) {
+		TypeFactory typeFactory = TypeFactory.getTypeFactory(underlyingNode.getGraphDatabase());
+		return typeFactory.cast(value, typeFactory.getType("string"), this);
+	}
 
 	public Object getValue(HasValue item) {
 		// If it's primitive, rip it off the node
