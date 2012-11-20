@@ -10,7 +10,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 import org.webseer.streams.model.program.Neo4JProgramUtils;
 import org.webseer.streams.model.program.TransformationNodeOutput;
 import org.webseer.streams.model.runtime.InputQueue;
@@ -43,7 +43,7 @@ public class Bucket {
 		return underlyingNode.getId();
 	}
 
-	public Type getType() {
+	public UserType getType() {
 		return getTransformationNodeOutput().getOutputField().getType();
 	}
 

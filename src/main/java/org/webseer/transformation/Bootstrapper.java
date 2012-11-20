@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.Library;
 import org.webseer.model.meta.Transformation;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 import org.webseer.type.TypeFactory;
 
 /**
@@ -79,14 +79,14 @@ public class Bootstrapper {
 			recurTransformations(factory, types, service, builtInDir, "", foundTransformations);
 
 			// Remove all the ones we didn't find...this is temporary until types get more predictable
-			Set<Type> typesToRemove = new HashSet<Type>();
-			for (Type type : types.getAllTypes()) {
+			Set<UserType> typesToRemove = new HashSet<UserType>();
+			for (UserType type : types.getAllTypes()) {
 				if (!foundTypes.contains(type.getName())) {
 					// Remove
 					typesToRemove.add(type);
 				}
 			}
-			for (Type type : typesToRemove) {
+			for (UserType type : typesToRemove) {
 				if (!type.isPrimitive()) {
 					log.info("Removing type: " + type.getName());
 					types.removeType(type);
@@ -200,7 +200,7 @@ public class Bootstrapper {
 			Set<String> foundTypes, File file, int sepPos, String language) {
 		String className = file.getName().substring(0, sepPos);
 		String qualifiedName = packageName + "." + className;
-		Type type = types.getType(qualifiedName);
+		UserType type = types.getType(qualifiedName);
 
 		foundTypes.add(qualifiedName);
 
@@ -216,7 +216,7 @@ public class Bootstrapper {
 			} else {
 				long modified = file.lastModified();
 				if (type.getVersion() == null || type.getVersion() < modified) {
-					Type newType = createType(service, qualifiedName, new FileReader(file), file.lastModified(),
+					UserType newType = createType(service, qualifiedName, new FileReader(file), file.lastModified(),
 							language);
 
 					if (newType != null) {
@@ -286,7 +286,7 @@ public class Bootstrapper {
 		return LanguageFactory.getInstance().generateTransformation(language, service, qualifiedName, reader, version);
 	}
 
-	private static Type createType(GraphDatabaseService service, String qualifiedName, Reader reader, long version,
+	private static UserType createType(GraphDatabaseService service, String qualifiedName, Reader reader, long version,
 			String language) throws IOException {
 		return LanguageFactory.getInstance().generateType(language, service, qualifiedName, reader, version);
 	}

@@ -16,7 +16,7 @@ public class Neo4JMetaUtils {
 		return output.getUnderlyingNode();
 	}
 
-	public static Node getNode(Type type) {
+	public static Node getNode(UserType type) {
 		return type.getUnderlyingNode();
 	}
 

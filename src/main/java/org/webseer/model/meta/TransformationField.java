@@ -45,7 +45,7 @@ public class TransformationField {
 		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.TRANSFORMATIONFIELD_FIELD, Field.class);
 	}
 
-	public Type getType() {
+	public UserType getType() {
 		return getField().getType();
 	}
 

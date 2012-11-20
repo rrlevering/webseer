@@ -12,7 +12,7 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 import org.webseer.streams.model.Program;
 import org.webseer.streams.model.Workspace;
 
@@ -167,7 +167,7 @@ public class TransformationGraph {
 		}
 
 		// Copy any buckets
-		Type.reader.copyBucketData(nodeToCopy.getId(), copyNode.getId());
+		UserType.reader.copyBucketData(nodeToCopy.getId(), copyNode.getId());
 		return copyNode;
 	}
 

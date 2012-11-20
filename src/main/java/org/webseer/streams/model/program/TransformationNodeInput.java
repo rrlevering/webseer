@@ -10,7 +10,7 @@ import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.InputPoint;
 import org.webseer.model.meta.Neo4JMetaUtils;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 import org.webseer.streams.model.trace.HasValue;
 import org.webseer.streams.model.trace.Item;
 import org.webseer.streams.model.trace.OutputGroup;
@@ -37,7 +37,7 @@ public class TransformationNodeInput implements Item, HasValue {
 				NeoRelationshipType.NODEINPUT_FIELD);
 		setValue(input.getValue());
 		setMeta(input.getMeta());
-		Type.reader.copyBucketData(input.getId(), underlyingNode.getId());
+		UserType.reader.copyBucketData(input.getId(), underlyingNode.getId());
 	}
 
 	public InputPoint getInputField() {
@@ -128,12 +128,12 @@ public class TransformationNodeInput implements Item, HasValue {
 	}
 
 	@Override
-	public Type getType() {
+	public UserType getType() {
 		return getInputField().getType();
 	}
 
 	@Override
-	public Type getType(String field) {
+	public UserType getType(String field) {
 		return getInputField().getType().getFieldType(field);
 	}
 

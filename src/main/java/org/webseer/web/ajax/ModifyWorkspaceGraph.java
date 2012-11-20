@@ -30,7 +30,7 @@ import org.webseer.model.meta.InputPoint;
 import org.webseer.model.meta.OutputPoint;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 import org.webseer.streams.model.Program;
 import org.webseer.streams.model.Workspace;
 import org.webseer.streams.model.WorkspaceBucket;
@@ -197,7 +197,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		throw new ServletException("Unable to find edge to link");
 	}
 
-	private JsonObject getType(Type type) {
+	private JsonObject getType(UserType type) {
 		JsonObject typeObject = new JsonObject();
 		typeObject.add("name", new JsonPrimitive(type.getName()));
 		JsonArray fields = new JsonArray();
@@ -331,7 +331,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		return container;
 	}
 
-	private JsonObject createBucketContainer(Type type, String label) {
+	private JsonObject createBucketContainer(UserType type, String label) {
 		JsonObject config = new JsonObject();
 		config.add("xtype", new JsonPrimitive("Webseer.WebseerBucketContainer"));
 		config.add("label", new JsonPrimitive(label));
@@ -601,7 +601,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		return possibilities;
 	}
 
-	private void accumulateTypeOptions(long rootId, String prefix, String name, Type type, JsonArray possibilities) {
+	private void accumulateTypeOptions(long rootId, String prefix, String name, UserType type, JsonArray possibilities) {
 		for (Field field : type.getFields()) {
 			JsonObject possibility = new JsonObject();
 			possibility.add("id", new JsonPrimitive(rootId + "," + field.getName()));

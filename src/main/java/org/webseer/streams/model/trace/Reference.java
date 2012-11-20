@@ -7,7 +7,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 
 /**
  * References allow you to have pointers to a previous place in the scope, which allow you to do things like aggregate
@@ -54,7 +54,7 @@ public class Reference implements Item {
 	}
 
 	@Override
-	public Type getType() {
+	public UserType getType() {
 		return getReferencedView().getType();
 	}
 
@@ -64,7 +64,7 @@ public class Reference implements Item {
 	}
 
 	@Override
-	public Type getType(String field) {
+	public UserType getType(String field) {
 		return getReferencedView().getViewData().getType(field);
 	}
 

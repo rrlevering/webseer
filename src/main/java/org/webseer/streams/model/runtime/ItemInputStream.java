@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.InputGroupGetter;
 import org.webseer.streams.model.trace.InputGroup;
 import org.webseer.streams.model.trace.ItemView;
@@ -29,7 +29,7 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 
 	private final Iterator<ItemView> underlyingItems;
 
-	private final Type targetType;
+	private final UserType targetType;
 
 	private final InputGroupGetter getter;
 
@@ -37,7 +37,7 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 
 	private InputStream currentStream;
 
-	public ItemInputStream(Iterator<ItemView> items, Type targetType, InputGroupGetter getter) {
+	public ItemInputStream(Iterator<ItemView> items, UserType targetType, InputGroupGetter getter) {
 		this.underlyingItems = items;
 		this.targetType = targetType;
 		this.getter = getter;
@@ -122,7 +122,7 @@ public class ItemInputStream extends InputStream implements Iterator<Object> {
 		}
 
 		Object original;
-		Type type;
+		UserType type;
 		original = currentItem.get();
 		type = currentItem.getType();
 

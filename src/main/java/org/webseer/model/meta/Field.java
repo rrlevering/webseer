@@ -16,7 +16,7 @@ public class Field {
 
 	protected final Node underlyingNode;
 
-	public Field(GraphDatabaseService service, Type type, String name, boolean repeated) {
+	public Field(GraphDatabaseService service, UserType type, String name, boolean repeated) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		this.underlyingNode.setProperty(NAME, name);
 		this.underlyingNode.createRelationshipTo(type.getUnderlyingNode(), NeoRelationshipType.FIELD_TYPE);
@@ -48,8 +48,8 @@ public class Field {
 		}
 	}
 
-	public Type getType() {
-		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.FIELD_TYPE, Type.class);
+	public UserType getType() {
+		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.FIELD_TYPE, UserType.class);
 	}
 
 	public Node getUnderlyingNode() {

@@ -5,7 +5,7 @@ import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
-import org.webseer.model.meta.Type;
+import org.webseer.model.meta.UserType;
 import org.webseer.streams.model.WorkspaceBucket;
 
 /**
@@ -40,7 +40,7 @@ public class DisconnectedWorkspaceBucketNode extends TransformationNode {
 		return (String) underlyingNode.getProperty(BUCKET_NAME);
 	}
 
-	public Type getType() {
-		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.WORKSPACE_BUCKET_TYPE, Type.class);
+	public UserType getType() {
+		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.WORKSPACE_BUCKET_TYPE, UserType.class);
 	}
 }

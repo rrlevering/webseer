@@ -14,7 +14,7 @@ import org.webseer.model.NeoRelationshipType;
  */
 public class OutputPoint extends TransformationField {
 
-	public OutputPoint(GraphDatabaseService service, Transformation transformation, String name, Type type) {
+	public OutputPoint(GraphDatabaseService service, Transformation transformation, String name, UserType type) {
 		super(service, null, new Field(service, type, name, false));
 		this.underlyingNode.createRelationshipTo(transformation.getUnderlyingNode(),
 				NeoRelationshipType.TRANSFORMATION_OUTPUTPOINT);

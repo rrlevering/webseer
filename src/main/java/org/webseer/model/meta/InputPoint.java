@@ -18,7 +18,7 @@ public class InputPoint extends TransformationField {
 
 	private static final String VARARGS = "VARARGS";
 
-	public InputPoint(GraphDatabaseService service, Transformation transformation, String name, Type type,
+	public InputPoint(GraphDatabaseService service, Transformation transformation, String name, UserType type,
 			InputType inputType, boolean required, boolean varargs) {
 		super(service, null, new Field(service, type, name, false));
 		this.underlyingNode.createRelationshipTo(transformation.getUnderlyingNode(),
