@@ -3,11 +3,11 @@ package org.webseer.transformation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.Library;
 import org.webseer.model.meta.Transformation;
+import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.Type;
 import org.webseer.type.TypeFactory;
 
@@ -73,7 +74,7 @@ public class Bootstrapper {
 			Set<String> foundTransformations = new HashSet<String>();
 			Set<String> foundTypes = new HashSet<String>();
 
-			//TODO(rrlevering): Better lookup system so we don't have to do this fragile ordering
+			// TODO(rrlevering): Better lookup system so we don't have to do this fragile ordering
 			recurLibraries(libraries, types, service, builtInDir, "");
 			recurTypes(factory, types, service, builtInDir, "", foundTypes);
 			recurTransformations(factory, types, service, builtInDir, "", foundTransformations);
@@ -112,8 +113,8 @@ public class Bootstrapper {
 		}
 	}
 
-	private static void recurLibraries(LibraryFactory libraries, TypeFactory types,
-			GraphDatabaseService service, File builtInDir, String packageName) {
+	private static void recurLibraries(LibraryFactory libraries, TypeFactory types, GraphDatabaseService service,
+			File builtInDir, String packageName) {
 		for (File file : builtInDir.listFiles()) {
 			if (!file.isDirectory()) {
 				int sepPos = file.getName().lastIndexOf('.');
@@ -127,15 +128,14 @@ public class Bootstrapper {
 				}
 
 			} else {
-				recurLibraries(libraries, types, service, file, packageName.isEmpty() ? file.getName()
-						: (packageName + "." + file.getName()));
+				recurLibraries(libraries, types, service, file, packageName.isEmpty() ? file.getName() : (packageName
+						+ "." + file.getName()));
 			}
 		}
 	}
 
 	private static void recurTypes(TransformationFactory transformations, TypeFactory types,
-			GraphDatabaseService service, File builtInDir, String packageName,
-			Set<String> foundTypes) {
+			GraphDatabaseService service, File builtInDir, String packageName, Set<String> foundTypes) {
 		for (File file : builtInDir.listFiles()) {
 			if (!file.isDirectory()) {
 				int sepPos = file.getName().lastIndexOf('.');
@@ -149,8 +149,8 @@ public class Bootstrapper {
 				}
 
 			} else {
-				recurTypes(transformations, types, service, file, packageName.isEmpty() ? file.getName()
-						: (packageName + "." + file.getName()), foundTypes);
+				recurTypes(transformations, types, service, file, packageName.isEmpty() ? file.getName() : (packageName
+						+ "." + file.getName()), foundTypes);
 			}
 		}
 	}
@@ -176,16 +176,16 @@ public class Bootstrapper {
 		}
 	}
 
-	private static void addLibrary(LibraryFactory libraries, GraphDatabaseService service,
-			String packageName, File file, int sepPos, String language) {
+	private static void addLibrary(LibraryFactory libraries, GraphDatabaseService service, String packageName,
+			File file, int sepPos, String language) {
 		String group = file.getParentFile().getName();
 		String nameAndVersion = file.getName().substring(0, sepPos);
 		String name = nameAndVersion.substring(0, nameAndVersion.lastIndexOf('-'));
 		String version = nameAndVersion.substring(nameAndVersion.lastIndexOf('-') + 1);
 
 		try {
-			Library library = LanguageFactory.getInstance().generateLibrary(language, service, group, name, new FileInputStream(file),
-					version);
+			Library library = LanguageFactory.getInstance().generateLibrary(language, service, group, name,
+					new FileInputStream(file), version);
 			libraries.addLibrary(library);
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
@@ -200,34 +200,23 @@ public class Bootstrapper {
 			Set<String> foundTypes, File file, int sepPos, String language) {
 		String className = file.getName().substring(0, sepPos);
 		String qualifiedName = packageName + "." + className;
-		Type type = types.getType(qualifiedName);
-
-		foundTypes.add(qualifiedName);
 
 		try {
-			if (type == null) {
-				// FIXME This fails now because it's trying to compile non types without libraries
-				type = createType(service, qualifiedName, new FileReader(file), file.lastModified(), language);
-				if (type != null) {
-					types.addType(type);
-
-					log.info("Added type: " + qualifiedName);
-				}
-			} else {
-				long modified = file.lastModified();
-				if (type.getVersion() == null || type.getVersion() < modified) {
-					Type newType = createType(service, qualifiedName, new FileReader(file), file.lastModified(),
-							language);
-
-					if (newType != null) {
-
-						types.removeType(type);
-						types.addType(newType);
-
-						log.info("Replaced type: " + qualifiedName);
-					}
+			long modified = file.lastModified();
+			Collection<Type> parsedTypes = createTypes(service, qualifiedName, new FileInputStream(file),
+					file.lastModified(), language);
+			for (Type parsedType : parsedTypes) {
+				Type existingType = types.getType(parsedType.getName());
+				if (existingType == null) {
+					types.addType(parsedType);
+					foundTypes.add(parsedType.getName());
+					log.info("Added type: " + parsedType.getName());
+				} else if (existingType.getVersion() == null || existingType.getVersion() < modified) {
+					types.removeType(existingType);
+					types.addType(parsedType);
+					log.info("Replaced type: " + parsedType.getName());
 				} else {
-					log.info("Found type: " + qualifiedName);
+					log.info("Found type: " + parsedType.getName());
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -235,6 +224,8 @@ public class Bootstrapper {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TransformationException e) {
 			e.printStackTrace();
 		}
 	}
@@ -243,33 +234,24 @@ public class Bootstrapper {
 			String packageName, Set<String> foundTransformations, File file, int sepPos, String language) {
 		String className = file.getName().substring(0, sepPos);
 		String qualifiedName = packageName + "." + className;
-		foundTransformations.add(qualifiedName);
-		Transformation trans = transformations.getLatestTransformationByName(qualifiedName);
 
 		try {
-			if (trans == null) {
-				trans = createTransformation(service, qualifiedName, new FileReader(file), file.lastModified(),
-						language);
-				if (trans != null) {
-					transformations.addTransformation(trans);
-
-					log.info("Added built-in transformation: " + qualifiedName);
-				}
-			} else {
-				long modified = file.lastModified();
-				if (trans.getVersion() == null || trans.getVersion() < modified) {
-					Transformation newTrans = createTransformation(service, qualifiedName, new FileReader(file),
-							file.lastModified(), language);
-
-					if (newTrans != null) {
-
-						transformations.removeTransformation(trans);
-						transformations.addTransformation(newTrans);
-
-						log.info("Replaced built-in transformation: " + qualifiedName);
-					}
+			long modified = file.lastModified();
+			Collection<Transformation> parsedTransforms = createTransformations(service, qualifiedName,
+					new FileInputStream(file), file.lastModified(), language);
+			for (Transformation parsedTransform : parsedTransforms) {
+				Transformation existingTransform = transformations.getLatestTransformationByName(parsedTransform
+						.getName());
+				foundTransformations.add(parsedTransform.getName());
+				if (existingTransform == null) {
+					transformations.addTransformation(parsedTransform);
+					log.info("Added transformation: " + parsedTransform.getName());
+				} else if (existingTransform.getVersion() == null || existingTransform.getVersion() < modified) {
+					transformations.removeTransformation(existingTransform);
+					transformations.addTransformation(parsedTransform);
+					log.info("Replaced transformation: " + parsedTransform.getName());
 				} else {
-					log.info("Found built-in transformation: " + qualifiedName);
+					log.info("Found transformation: " + parsedTransform.getName());
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -278,17 +260,19 @@ public class Bootstrapper {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (TransformationException e) {
+			e.printStackTrace();
 		}
 	}
 
-	private static Transformation createTransformation(GraphDatabaseService service, String qualifiedName,
-			Reader reader, long version, String language) throws IOException {
-		return LanguageFactory.getInstance().generateTransformation(language, service, qualifiedName, reader, version);
+	private static Collection<Transformation> createTransformations(GraphDatabaseService service, String qualifiedName,
+			InputStream reader, long version, String language) throws IOException, TransformationException {
+		return LanguageFactory.getInstance().generateTransformations(language, service, qualifiedName, reader, version);
 	}
 
-	private static Type createType(GraphDatabaseService service, String qualifiedName, Reader reader, long version,
-			String language) throws IOException {
-		return LanguageFactory.getInstance().generateType(language, service, qualifiedName, reader, version);
+	private static Collection<Type> createTypes(GraphDatabaseService service, String qualifiedName, InputStream reader,
+			long version, String language) throws IOException, TransformationException {
+		return LanguageFactory.getInstance().generateTypes(language, service, qualifiedName, reader, version);
 	}
 
 }

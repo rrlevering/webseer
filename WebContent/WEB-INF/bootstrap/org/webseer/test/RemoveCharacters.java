@@ -1,9 +1,11 @@
 package org.webseer.test;
 
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 
+@FunctionDef
 public class RemoveCharacters implements JavaFunction {
 
 	@InputChannel

@@ -1,4 +1,4 @@
-package org.webseer.transformation;
+package org.webseer.java;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface FunctionDef {
-	String description();
-	String[] keywords();
+	String description() default "";
+	String[] keywords() default {};
 	ImportLibrary[] libraries() default {};
 }

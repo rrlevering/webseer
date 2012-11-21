@@ -16,46 +16,22 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.TransformationException;
-import org.webseer.transformation.InputReader;
 import org.webseer.transformation.OutputWriter;
-import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.RuntimeTransformationException;
 import org.webseer.transformation.TransformationListener;
 
-import com.google.common.collect.Lists;
+public class ClassTransformation extends JavaPullTransformation {
 
-/**
- * This wraps a JavaFunction implementation that has input and output channels
- * and a single execute method.
- * 
- * @author ryan
- */
-public class PullJavaFunction implements PullRuntimeTransformation {
-
-	private static final Logger log = LoggerFactory.getLogger(PullJavaFunction.class);
-
-	private final JavaFunction object;
+	private static final Logger log = LoggerFactory.getLogger(JavaPullTransformation.class);
 
 	private final Map<String, List<Iterator<Object>>> inputs = new HashMap<String, List<Iterator<Object>>>();
 
-	private final Map<String, InputReader> readers = new HashMap<String, InputReader>();
-
-	private final Map<String, OutputWriter<?>> outputs = new HashMap<String, OutputWriter<?>>();
+	private final JavaFunction object;
 	
-	private final List<TransformationListener> listeners = Lists.newArrayList();
-
 	private boolean runOnce = false;
 
-	public PullJavaFunction(JavaFunction object) {
+	public ClassTransformation(JavaFunction object) {
 		this.object = object;
-	}
-
-	/**
-	 * For any inputs that are sinks, set them right now. Otherwise, add the
-	 * streams to the list of streams.
-	 */
-	public void addInputChannel(String inputPoint, final InputReader inputReader) throws TransformationException {
-		readers.put(inputPoint, inputReader);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -233,15 +209,5 @@ public class PullJavaFunction implements PullRuntimeTransformation {
 		}
 
 		return true;
-	}
-
-	@Override
-	public void addOutputChannel(String outputPoint, OutputWriter<?> output) {
-		outputs.put(outputPoint, output);
-	}
-
-	@Override
-	public void addListener(TransformationListener listener) {
-		this.listeners.add(listener);
 	}
 }

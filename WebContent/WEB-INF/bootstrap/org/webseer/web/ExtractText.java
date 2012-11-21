@@ -6,9 +6,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
-import org.webseer.transformation.FunctionDef;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
+import org.webseer.java.OutputChannel;
 
 @FunctionDef(description = "Extracts text from an HTML document", keywords = { "extract", "text", "html" })
 public class ExtractText extends HTMLParsingFunction {

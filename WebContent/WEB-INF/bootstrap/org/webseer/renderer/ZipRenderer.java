@@ -6,12 +6,14 @@ import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 
 import com.google.protobuf.ByteString;
 
+@FunctionDef
 public class ZipRenderer implements JavaFunction {
 
 	@OutputChannel

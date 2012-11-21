@@ -1,12 +1,14 @@
 package org.webseer.renderer;
 
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 import org.webseer.web.DocumentView;
 
 import com.google.protobuf.ByteString;
 
+@FunctionDef
 public class HTMLRenderer implements JavaFunction {
 
 	@OutputChannel

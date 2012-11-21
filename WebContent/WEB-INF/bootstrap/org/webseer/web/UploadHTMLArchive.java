@@ -11,9 +11,10 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 import org.webseer.transformation.OutputWriter;
 
 import com.csvreader.CsvReader;
@@ -41,6 +42,7 @@ import com.google.protobuf.ByteString;
  * 
  * All meta fields are optional
  */
+@FunctionDef
 public class UploadHTMLArchive implements JavaFunction {
 
 	@OutputChannel

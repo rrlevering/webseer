@@ -1,4 +1,4 @@
-package org.webseer.type;
+package org.webseer.java;
 
 public @interface Required {
 

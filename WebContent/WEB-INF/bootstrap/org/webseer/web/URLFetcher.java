@@ -7,11 +7,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.webseer.java.FunctionDef;
+import org.webseer.java.ImportLibrary;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.FunctionDef;
-import org.webseer.transformation.ImportLibrary;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 
 import com.google.protobuf.ByteString;
 

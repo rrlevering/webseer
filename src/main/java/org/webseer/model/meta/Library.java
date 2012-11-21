@@ -3,10 +3,10 @@ package org.webseer.model.meta;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
+import org.webseer.model.NeoRelationshipType;
 
 /**
- * Represents an abstraction of a library, a set of generally related code that
- * is versioned together.
+ * Represents an abstraction of a library, a set of generally related code that is versioned together.
  * 
  * @author Ryan Levering
  */
@@ -22,8 +22,7 @@ public class Library {
 
 	private final Node underlyingNode;
 
-	public Library(GraphDatabaseService service, String group,
-			String libraryName, String version, byte[] data) {
+	public Library(GraphDatabaseService service, String group, String libraryName, String version, byte[] data) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		Neo4JUtils.setProperty(underlyingNode, NAME, libraryName);
 		Neo4JUtils.setProperty(underlyingNode, GROUP, group);
@@ -49,6 +48,20 @@ public class Library {
 
 	public byte[] getData() {
 		return Neo4JUtils.getByteArray(underlyingNode, DATA);
+	}
+	
+	public Iterable<LibraryResource> getResources() {
+		return Neo4JUtils
+				.getIterable(underlyingNode, NeoRelationshipType.LIBRARY_RESOURCE, LibraryResource.class);
+	}
+	
+	public LibraryResource getResource(String name) {
+		for (LibraryResource resource : getResources()) {
+			if (resource.getName().equals(name)) {
+				return resource;
+			}
+		}
+		return null;
 	}
 
 	Node getUnderlyingNode() {

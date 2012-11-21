@@ -4,15 +4,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 
 /**
  * Redirects a string by whether it matches a set of strings.
  * 
  * @author ryan
  */
+@FunctionDef
 public class StringFilter implements JavaFunction {
 
 	@InputChannel

@@ -4,9 +4,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.webseer.type.Optional;
-import org.webseer.type.Required;
-import org.webseer.type.Type;
+import org.webseer.java.Optional;
+import org.webseer.java.Required;
+import org.webseer.java.Type;
 
 import com.google.protobuf.ByteString;
 

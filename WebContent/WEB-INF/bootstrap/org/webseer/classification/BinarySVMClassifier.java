@@ -5,10 +5,10 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.ImportLibrary;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
@@ -19,7 +19,7 @@ import weka.core.SparseInstance;
 
 import com.google.protobuf.ByteString;
 
-@ImportLibrary(name = "weka", group = "weka", version = "1")
+@FunctionDef
 public class BinarySVMClassifier implements JavaFunction {
 
 	@InputChannel

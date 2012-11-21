@@ -1,5 +1,25 @@
 package org.webseer.java;
 
+import japa.parser.JavaParser;
+import japa.parser.ParseException;
+import japa.parser.ast.CompilationUnit;
+import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.body.ClassOrInterfaceDeclaration;
+import japa.parser.ast.body.FieldDeclaration;
+import japa.parser.ast.body.MethodDeclaration;
+import japa.parser.ast.body.Parameter;
+import japa.parser.ast.expr.AnnotationExpr;
+import japa.parser.ast.expr.ArrayInitializerExpr;
+import japa.parser.ast.expr.Expression;
+import japa.parser.ast.expr.MemberValuePair;
+import japa.parser.ast.expr.NameExpr;
+import japa.parser.ast.expr.NormalAnnotationExpr;
+import japa.parser.ast.expr.StringLiteralExpr;
+import japa.parser.ast.type.ClassOrInterfaceType;
+import japa.parser.ast.type.PrimitiveType;
+import japa.parser.ast.type.ReferenceType;
+import japa.parser.ast.visitor.VoidVisitorAdapter;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -9,17 +29,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -28,8 +48,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -53,23 +71,19 @@ import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.InputPoint;
 import org.webseer.model.meta.InputType;
 import org.webseer.model.meta.Library;
+import org.webseer.model.meta.LibraryResource;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.OutputPoint;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.TransformationField;
 import org.webseer.model.meta.Type;
-import org.webseer.transformation.FunctionDef;
-import org.webseer.transformation.InputChannel;
+import org.webseer.transformation.LanguageTransformationFactory;
 import org.webseer.transformation.LibraryFactory;
-import org.webseer.transformation.OutputChannel;
 import org.webseer.transformation.OutputWriter;
 import org.webseer.transformation.PullRuntimeTransformation;
-import org.webseer.transformation.LanguageTransformationFactory;
 import org.webseer.type.LanguageTypeFactory;
 import org.webseer.type.TypeFactory;
-
-import com.google.protobuf.ByteString;
 
 /**
  * The Java runtime factory is responsible for taking Java source from the database, compiling it, and returning a
@@ -81,29 +95,19 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 
 	private static final Logger log = LoggerFactory.getLogger(JavaRuntimeFactory.class);
 
-	private static Map<Class<?>, String> PRIMITIVE_MAP = new HashMap<Class<?>, String>();
+	private static Map<String, String> PRIMITIVE_MAP = new HashMap<String, String>();
 
 	static {
-		PRIMITIVE_MAP.put(String.class, "string");
-		PRIMITIVE_MAP.put(Double.class, "double");
-		PRIMITIVE_MAP.put(Double.TYPE, "double");
-		PRIMITIVE_MAP.put(Float.class, "float");
-		PRIMITIVE_MAP.put(Float.TYPE, "float");
-		PRIMITIVE_MAP.put(Integer.class, "int32");
-		PRIMITIVE_MAP.put(Integer.TYPE, "int32");
-		PRIMITIVE_MAP.put(Long.class, "int64");
-		PRIMITIVE_MAP.put(Long.TYPE, "int64");
-		PRIMITIVE_MAP.put(Boolean.class, "bool");
-		PRIMITIVE_MAP.put(Boolean.TYPE, "bool");
-		PRIMITIVE_MAP.put(ByteString.class, "bytes");
-		PRIMITIVE_MAP.put(InputStream.class, "bytes");
-		PRIMITIVE_MAP.put(OutputStream.class, "bytes");
-		PRIMITIVE_MAP.put(OutputWriter.class, "bytes");
+		PRIMITIVE_MAP.put("java.lang.String", "string");
+		PRIMITIVE_MAP.put("java.lang.Double", "double");
+		PRIMITIVE_MAP.put("java.lang.Float", "float");
+		PRIMITIVE_MAP.put("java.lang.Integer", "int32");
+		PRIMITIVE_MAP.put("java.lang.Long", "int64");
+		PRIMITIVE_MAP.put("java.lang.Boolean", "bool");
+		PRIMITIVE_MAP.put("com.google.protobuf.ByteString", "bytes");
+		PRIMITIVE_MAP.put("java.io.InputStream", "bytes");
+		PRIMITIVE_MAP.put("java.io.OutputStream", "bytes");
 	}
-
-	public static final String COMPILE_DIRECTORY = "build/java";
-
-	public static final String RUNTIME_DIRECTORY = "runtime/java";
 
 	public PullRuntimeTransformation generatePullTransformation(Transformation transformation)
 			throws TransformationException {
@@ -112,9 +116,18 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		String className = transformation.getName();
 		String code = transformation.getCode();
 
+		// Get all the dependent types
+		List<Type> types = new ArrayList<Type>();
+		for (InputPoint input : transformation.getInputPoints()) {
+			types.add(input.getType());
+		}
+		for (OutputPoint output : transformation.getOutputPoints()) {
+			types.add(output.getType());
+		}
+
 		JavaFunction object;
 		try {
-			Class<?> clazz = getClass(className, new StringReader(code), transformation.getLibraries());
+			Class<?> clazz = getClass(className, new StringReader(code), types, transformation.getLibraries());
 			object = (JavaFunction) clazz.newInstance();
 		} catch (InstantiationException e) {
 			throw new TransformationException("Unable to instantiate user code", e);
@@ -125,10 +138,11 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		}
 
 		// Load and wrap the object with a java transformation wrapper
-		return new PullJavaFunction(object);
+		return new ClassTransformation(object);
 	}
 
-	public Class<?> getClass(String className, Reader source, Iterable<Library> dependencies) throws IOException {
+	private Class<?> getClass(String className, Reader source, Iterable<Type> types, Iterable<Library> dependencies)
+			throws IOException {
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		Map<String, JavaFileObject> output = new HashMap<String, JavaFileObject>();
@@ -164,31 +178,6 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException("Improper code for getting runtime class", e);
 		}
-	}
-
-	private static List<Library> getLibraries(String sourceAsString, LibraryFactory factory) {
-		List<Library> dependentJars = new ArrayList<Library>();
-		Matcher importMatcher = Pattern.compile("\\@ImportLibrary\\s*\\(\\s*([^\\)]+)\\s*\\)", Pattern.MULTILINE)
-				.matcher(sourceAsString);
-		while (importMatcher.find()) {
-			String[] nameVersion = importMatcher.group(1).split("\\s*,\\s*");
-			String name = null;
-			String group = null;
-			String version = "1";
-			for (String nameOrVersion : nameVersion) {
-				String[] keyValue = nameOrVersion.split("\\s*=\\s*");
-				if (keyValue[0].equals("name")) {
-					name = keyValue[1].substring(1, keyValue[1].length() - 1);
-				} else if (keyValue[0].equals("group")) {
-					group = keyValue[1].substring(1, keyValue[1].length() - 1);
-				} else {
-					version = keyValue[1].substring(1, keyValue[1].length() - 1);
-				}
-			}
-			log.info("Found import for library " + name + "/" + group + " with version " + version);
-			dependentJars.add(factory.getLibrary(group, name, version));
-		}
-		return dependentJars;
 	}
 
 	static class JavaSourceFromString extends SimpleJavaFileObject {
@@ -333,8 +322,6 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		protected URL findResource(String name) {
 			return super.findResource(name);
 		}
-		
-		
 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -348,8 +335,8 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		@Override
 		protected Class<?> findClass(String name) throws ClassNotFoundException {
 			JavaFileObject jfo = output.get(name);
-			log.info("Looking for " + name);
-			if (jfo != null) {			
+			log.debug("Looking for " + name);
+			if (jfo != null) {
 				byte[] bytes;
 				try {
 					bytes = IOUtils.toByteArray(jfo.openInputStream());
@@ -484,114 +471,322 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		}
 	}
 
+	/**
+	 * Generates a transformation without any compilation. This essentially does the linking of the class file to the
+	 * dependent classes.
+	 */
 	@Override
-	public Transformation generateTransformation(GraphDatabaseService service, String qualifiedName, Reader reader,
-			long version) throws IOException {
-		TypeFactory factory = TypeFactory.getTypeFactory(service, true);
+	public Collection<Transformation> generateTransformations(final GraphDatabaseService service, String qualifiedName,
+			InputStream reader, final long version) throws IOException, TransformationException {
+		final TypeFactory factory = TypeFactory.getTypeFactory(service, true);
 
 		LibraryFactory libraryFactory = LibraryFactory.getLibraryFactory(service, true);
 
-		String code = IOUtils.toString(reader);
+		final String code = IOUtils.toString(reader);
 
-		List<Library> libraries = getLibraries(code, libraryFactory);
-
-		Class<?> clazz = getClass(qualifiedName, new StringReader(code), libraries);
-		if (!JavaFunction.class.isAssignableFrom(clazz)) {
-			return null;
-		}
-		Transformation trans = new Transformation(service, qualifiedName);
-		for (Library library : libraries) {
-			Neo4JMetaUtils.getNode(trans).createRelationshipTo(Neo4JMetaUtils.getNode(library),
-					NeoRelationshipType.TRANSFORMATION_LIBRARY);
+		CompilationUnit cu;
+		try {
+			// parse the file
+			cu = JavaParser.parse(new ByteArrayInputStream(code.getBytes()));
+		} catch (ParseException e) {
+			throw new IOException("Problem parsing java transformation", e);
+		} finally {
+			reader.close();
 		}
 
-		FunctionDef metaInfo = clazz.getAnnotation(FunctionDef.class);
-		if (metaInfo != null) {
-			trans.setDescription(metaInfo.description());
-			trans.setKeyWords(metaInfo.keywords());
-		}
+		// Go over the transformation and figure out:
+		// 1) The transformations here with inputs and outputs
+		// 2) The dependent libraries and types
+		List<ImportDeclaration> importDecls = cu.getImports();
 
-		// Get inputs and outputs
-		Field[] fields = clazz.getDeclaredFields();
-		for (Field field : fields) {
-			if (field.getAnnotation(InputChannel.class) != null) {
-				// An input
-				Type type;
-				java.lang.reflect.Type fieldType = field.getGenericType();
-				InputType inputType;
-				boolean varargs;
-				if (factory.getType(getTypeName(fieldType)) != null) {
-					type = TypeFactory.getTypeFactory(service).getType(getTypeName(fieldType));
-					inputType = InputType.SERIAL;
-					varargs = false;
-				} else if (fieldType instanceof ParameterizedType) {
-					ParameterizedType paramType = (ParameterizedType) fieldType;
-					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || Iterator.class
-							.isAssignableFrom((Class<?>) paramType.getRawType()))
-							&& factory.getType(getTypeName(paramType.getActualTypeArguments()[0])) != null) {
-						type = factory.getType(getTypeName(paramType.getActualTypeArguments()[0]));
-						inputType = InputType.AGGREGATE;
-						varargs = false;
-					} else {
-						continue;
-					}
-				} else if (fieldType instanceof Class<?> && ((Class<?>) fieldType).isArray()) {
-					// Varargs
-					Class<?> componentType = ((Class<?>) fieldType).getComponentType();
-					if (factory.getType(getTypeName(componentType)) != null) {
-						type = factory.getType(getTypeName(componentType));
-						inputType = InputType.SERIAL;
-						varargs = true;
-					} else {
-						continue;
-					}
-				} else if (fieldType instanceof GenericArrayType) {
-					ParameterizedType paramType = (ParameterizedType) ((GenericArrayType) fieldType)
-							.getGenericComponentType();
-					if (Iterator.class.isAssignableFrom((Class<?>) paramType.getRawType())
-							&& factory.getType(getTypeName(paramType.getActualTypeArguments()[0])) != null) {
-						type = factory.getType(getTypeName(paramType.getActualTypeArguments()[0]));
-						inputType = InputType.AGGREGATE;
-						varargs = true;
-					} else {
-						continue;
-					}
-				} else {
-					continue;
-				}
-				// Run through the nested structure of the type and generate
-				// input points for every level
-				InputPoint inputPoint = new InputPoint(service, trans, field.getName(), type, inputType, true, varargs);
-				generateInputPoints(service, trans, inputPoint, type);
+		final Set<Library> libraries = new HashSet<Library>();
 
-			} else if (field.getAnnotation(OutputChannel.class) != null) {
-				// An output
-				Type type;
-				java.lang.reflect.Type fieldType = field.getGenericType();
-				if (factory.getType(getTypeName(fieldType)) != null) {
-					type = factory.getType(getTypeName(fieldType));
-				} else if (fieldType instanceof ParameterizedType) {
-					ParameterizedType paramType = (ParameterizedType) fieldType;
-					if ((Iterable.class.isAssignableFrom((Class<?>) paramType.getRawType()) || OutputWriter.class
-							.isAssignableFrom((Class<?>) paramType.getRawType()))
-							&& factory.getType(getTypeName(paramType.getActualTypeArguments()[0])) != null) {
-						type = factory.getType(getTypeName(paramType.getActualTypeArguments()[0]));
-					} else {
-						continue;
-					}
-				} else {
-					continue;
-				}
-				OutputPoint outputPoint = new OutputPoint(service, trans, field.getName(), type);
-				generateOutputPoints(service, trans, outputPoint, type);
+		final String packageName = cu.getPackage().getName().toString();
+
+		final Map<String, String> importLookup = new HashMap<String, String>();
+
+		// Each import needs to either be in a library, a type, or the system library
+		for (ImportDeclaration importDecl : importDecls) {
+			NameExpr importName = importDecl.getName();
+			String className = importName.toString();
+			importLookup.put(importName.getName(), importName.toString());
+
+			Type type = factory.getType(className);
+			if (type != null) {
+				System.out.println("Found type for " + type.getName());
+			}
+
+			LibraryResource resource = libraryFactory.getResource(className);
+			if (resource != null) {
+				System.out.println("Found library file for " + resource.getName());
+				libraries.add(resource.getLibrary());
 			}
 		}
 
-		// Put code in
-		trans.setCode(code);
-		trans.setVersion(version);
+		final List<FieldDeclaration> inputFields = new ArrayList<FieldDeclaration>();
+		final List<FieldDeclaration> outputFields = new ArrayList<FieldDeclaration>();
+		final AnnotationExpr[] transform = new AnnotationExpr[1];
 
-		return trans;
+		final List<Transformation> transformations = new ArrayList<Transformation>();
+
+		VoidVisitorAdapter<Object> visitor = new VoidVisitorAdapter<Object>() {
+
+			@Override
+			public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+				if (n.getAnnotations() != null) {
+					for (AnnotationExpr annotation : n.getAnnotations()) {
+						String annotationClass = resolveClass(importLookup, packageName, annotation.getName().getName());
+						if (annotationClass.equals(FunctionDef.class.getName())) {
+							// We know this is a class transformation
+							System.out.println("Class transform = " + n.getName());
+							transform[0] = annotation;
+						}
+					}
+				}
+				super.visit(n, arg);
+			}
+
+			public void visit(FieldDeclaration field, Object o) {
+				if (field.getAnnotations() != null) {
+					for (AnnotationExpr annotation : field.getAnnotations()) {
+						String annotationClass = resolveClass(importLookup, packageName, annotation.getName().getName());
+						if (annotationClass.equals(InputChannel.class.getName())) {
+							// Add this to the input channel list for when we create the class transformation
+							System.out.println("Input = " + field.getVariables());
+							inputFields.add(field);
+						} else if (annotationClass.equals(OutputChannel.class.getName())) {
+							// Add this to the output channel list for when we create the class transformation
+							System.out.println("Output = " + field.getVariables());
+							outputFields.add(field);
+						}
+					}
+				}
+				super.visit(field, o);
+			}
+
+			public void visit(MethodDeclaration method, Object o) {
+				if (method.getAnnotations() != null) {
+					for (AnnotationExpr annotation : method.getAnnotations()) {
+						String annotationClass = resolveClass(importLookup, packageName, annotation.getName().getName());
+						if (annotationClass.equals(FunctionDef.class.getName())) {
+							// We know this is a method transformation
+							System.out.println("Method transform = " + method.getName());
+							Transformation methodTransformation = new Transformation(service, method.getName());
+							methodTransformation.setCode(code);
+							methodTransformation.setVersion(version);
+
+							addTransformationMetaInformation(methodTransformation, annotation);
+
+							try {
+								createOutputPoint(service, importLookup, packageName, factory, methodTransformation,
+										method.getType(), "return");
+								for (Parameter param : method.getParameters()) {
+									createInputPoint(service, importLookup, packageName, factory, methodTransformation,
+											param.getType(), param.getId().getName());
+								}
+							} catch (TransformationException e) {
+								e.printStackTrace();
+							}
+							transformations.add(methodTransformation);
+							for (Library library : libraries) {
+								Neo4JMetaUtils.getNode(methodTransformation).createRelationshipTo(
+										Neo4JMetaUtils.getNode(library), NeoRelationshipType.TRANSFORMATION_LIBRARY);
+							}
+						}
+					}
+				}
+				super.visit(method, o);
+			}
+
+		};
+
+		cu.accept(visitor, null);
+
+		if (transform[0] != null) {
+			// Generate a class transform
+			Transformation classTransformation = new Transformation(service, qualifiedName);
+			classTransformation.setCode(code);
+			classTransformation.setVersion(version);
+			addTransformationMetaInformation(classTransformation, transform[0]);
+			for (FieldDeclaration inputField : inputFields) {
+				createInputPoint(service, importLookup, packageName, factory, classTransformation,
+						inputField.getType(), inputField.getVariables().get(0).getId().getName());
+			}
+			for (FieldDeclaration outputField : outputFields) {
+				createOutputPoint(service, importLookup, packageName, factory, classTransformation,
+						outputField.getType(), outputField.getVariables().get(0).getId().getName());
+			}
+			transformations.add(classTransformation);
+			for (Library library : libraries) {
+				Neo4JMetaUtils.getNode(classTransformation).createRelationshipTo(Neo4JMetaUtils.getNode(library),
+						NeoRelationshipType.TRANSFORMATION_LIBRARY);
+			}
+		}
+
+		return transformations;
+	}
+
+	private String resolveClass(Map<String, String> importLookup, String packageName, String name) {
+		if (name.indexOf('.') >= 0) {
+			return name;
+		}
+		String resolved = importLookup.get(name);
+		if (resolved != null) {
+			return resolved;
+		}
+		// java.lang is special cased
+		if (name.equals("String") || name.equals("Boolean") || name.equals("Double") || name.equals("Integer")) {
+			return "java.lang." + name;
+		}
+		return packageName + "." + name;
+	}
+
+	private static String transform(String resolved) {
+		if (PRIMITIVE_MAP.containsKey(resolved)) {
+			return PRIMITIVE_MAP.get(resolved);
+		}
+		return resolved;
+	}
+
+	private void addTransformationMetaInformation(Transformation methodTransformation, AnnotationExpr annotation) {
+		if (annotation instanceof NormalAnnotationExpr) {
+			List<MemberValuePair> nameValues = ((NormalAnnotationExpr) annotation).getPairs();
+			for (MemberValuePair nameValue : nameValues) {
+				if (nameValue.getName().equals("description")) {
+					String description = ((StringLiteralExpr) nameValue.getValue()).getValue();
+					methodTransformation.setDescription(description);
+				} else if (nameValue.getName().equals("keywords")) {
+					List<Expression> keywordExprs = ((ArrayInitializerExpr) nameValue.getValue()).getValues();
+					String[] keywords = new String[keywordExprs.size()];
+					for (int i = 0; i < keywords.length; i++) {
+						keywords[i] = ((StringLiteralExpr) keywordExprs.get(i)).getValue();
+					}
+					methodTransformation.setKeyWords(keywords);
+				}
+			}
+		}
+	}
+
+	private void createOutputPoint(GraphDatabaseService service, Map<String, String> importLookup, String packageName,
+			TypeFactory types, Transformation trans, japa.parser.ast.type.Type parsedType, String fieldName)
+			throws TransformationException {
+		// An output
+		Type type = getSimpleType(types, importLookup, packageName, parsedType);
+		if (type == null) {
+			if (parsedType instanceof ReferenceType) {
+				japa.parser.ast.type.Type referencedType = ((ReferenceType) parsedType).getType();
+				if (referencedType instanceof ClassOrInterfaceType) {
+					String rawName = ((ClassOrInterfaceType) referencedType).getName();
+					// FIXME...lots of crap here
+					if (rawName.equals(Iterable.class.getSimpleName())
+							|| rawName.equals(OutputWriter.class.getSimpleName())) {
+						String genericName = ((ClassOrInterfaceType) ((ReferenceType) ((ClassOrInterfaceType) referencedType)
+								.getTypeArgs().get(0)).getType()).getName();
+						type = types.getType(transform(resolveClass(importLookup, packageName, genericName)));
+					} else {
+						throw new TransformationException("No type defined for " + fieldName);
+					}
+				} else {
+					throw new IllegalStateException("Unrecognized type type");
+				}
+			} else {
+				throw new IllegalStateException("Unrecognized type type");
+			}
+		}
+		OutputPoint outputPoint = new OutputPoint(service, trans, fieldName, type);
+		generateOutputPoints(service, trans, outputPoint, type);
+	}
+
+	private Type getSimpleType(TypeFactory types, Map<String, String> importLookup, String packageName,
+			japa.parser.ast.type.Type parsedType) throws TransformationException {
+		if (parsedType instanceof PrimitiveType) {
+			String primitiveString;
+			switch (((PrimitiveType) parsedType).getType()) {
+			case Boolean:
+				primitiveString = "bool";
+				break;
+			case Byte:
+				primitiveString = "byte";
+				break;
+			case Char:
+				primitiveString = "char";
+				break;
+			case Double:
+				primitiveString = "double";
+				break;
+			case Float:
+				primitiveString = "float";
+				break;
+			case Int:
+				primitiveString = "int32";
+				break;
+			case Long:
+				primitiveString = "int64";
+				break;
+			case Short:
+				primitiveString = "int16";
+				break;
+			default:
+				throw new IllegalStateException("Unrecognized primitive enum");
+			}
+			return types.getType(primitiveString);
+		}
+		if (parsedType instanceof ClassOrInterfaceType) {
+			String rawName = ((ClassOrInterfaceType) parsedType).getName();
+			String resolved = transform(resolveClass(importLookup, packageName, rawName));
+			return types.getType(resolved);
+		}
+		if (parsedType instanceof ReferenceType) {
+			if (((ReferenceType) parsedType).getArrayCount() > 0) {
+				return null; // Don't handle arrays here
+			}
+			japa.parser.ast.type.Type referencedType = ((ReferenceType) parsedType).getType();
+			if (referencedType instanceof ClassOrInterfaceType) {
+				String rawName = ((ClassOrInterfaceType) referencedType).getName();
+				String resolved = transform(resolveClass(importLookup, packageName, rawName));
+				return types.getType(resolved);
+			}
+		}
+		return null;
+	}
+
+	private void createInputPoint(GraphDatabaseService service, Map<String, String> importLookup, String packageName,
+			TypeFactory types, Transformation trans, japa.parser.ast.type.Type parsedType, String fieldName)
+			throws TransformationException {
+		// An input
+		Type type = getSimpleType(types, importLookup, packageName, parsedType);
+		InputType inputType;
+		boolean varargs;
+		if (type != null) {
+			inputType = InputType.SERIAL;
+			varargs = false;
+		} else {
+			if (parsedType instanceof ReferenceType) {
+				japa.parser.ast.type.Type referencedType = ((ReferenceType) parsedType).getType();
+				if (referencedType instanceof ClassOrInterfaceType) {
+					String rawName = ((ClassOrInterfaceType) referencedType).getName();
+					// FIXME...lots of crap here
+					if (rawName.equals(Iterator.class.getSimpleName())
+							|| rawName.equals(Iterable.class.getSimpleName())) {
+						String genericName = ((ClassOrInterfaceType) ((ReferenceType) ((ClassOrInterfaceType) referencedType)
+								.getTypeArgs().get(0)).getType()).getName();
+						type = types.getType(transform(resolveClass(importLookup, packageName, genericName)));
+						inputType = InputType.AGGREGATE;
+						varargs = false;
+					} else {
+						throw new TransformationException("No type defined for " + fieldName);
+					}
+				} else {
+					throw new IllegalStateException("Unrecognized type type");
+				}
+			} else {
+				throw new IllegalStateException("Unrecognized type type");
+			}
+		}
+		// Run through the nested structure of the type and generate
+		// input points for every level
+		InputPoint inputPoint = new InputPoint(service, trans, fieldName, type, inputType, true, varargs);
+		generateInputPoints(service, trans, inputPoint, type);
 	}
 
 	private void generateInputPoints(GraphDatabaseService service, Transformation trans, TransformationField parent,
@@ -613,44 +808,107 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 	}
 
 	@Override
-	public Type generateType(GraphDatabaseService service, String qualifiedName, Reader reader, long version)
-			throws IOException {
+	public Collection<Type> generateTypes(GraphDatabaseService service, String qualifiedName, InputStream reader,
+			long version) throws IOException, TransformationException {
 		TypeFactory factory = TypeFactory.getTypeFactory(service);
 
 		LibraryFactory libraryFactory = LibraryFactory.getLibraryFactory(service, true);
 
 		String code = IOUtils.toString(reader);
 
-		List<Library> libraries = getLibraries(code, libraryFactory);
+		CompilationUnit cu;
+		try {
+			// parse the file
+			cu = JavaParser.parse(new ByteArrayInputStream(code.getBytes()));
+		} catch (ParseException e) {
+			throw new IOException("Problem parsing java transformation", e);
+		} finally {
+			reader.close();
+		}
 
-		Class<?> clazz = getClass(qualifiedName, new StringReader(code), libraries);
-		if (clazz.getAnnotation(org.webseer.type.Type.class) == null) {
-			return null;
+		// Go over the transformation and figure out:
+		// 1) The transformations here with inputs and outputs
+		// 2) The dependent libraries and types
+		List<ImportDeclaration> importDecls = cu.getImports();
+
+		final Set<Library> libraries = new HashSet<Library>();
+
+		final String packageName = cu.getPackage().getName().toString();
+
+		final Map<String, String> importLookup = new HashMap<String, String>();
+
+		// Each import needs to either be in a library, a type, or the system library
+		for (ImportDeclaration importDecl : importDecls) {
+			NameExpr importName = importDecl.getName();
+			String className = importName.toString();
+			importLookup.put(importName.getName(), importName.toString());
+
+			Type type = factory.getType(className);
+			if (type != null) {
+				System.out.println("Found type for " + type.getName());
+			}
+
+			LibraryResource resource = libraryFactory.getResource(className);
+			if (resource != null) {
+				System.out.println("Found library file for " + resource.getName());
+				libraries.add(resource.getLibrary());
+			}
+		}
+
+		final List<FieldDeclaration> fields = new ArrayList<FieldDeclaration>();
+		final AnnotationExpr[] transform = new AnnotationExpr[1];
+
+		VoidVisitorAdapter<Object> visitor = new VoidVisitorAdapter<Object>() {
+
+			@Override
+			public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+				if (n.getAnnotations() != null) {
+					for (AnnotationExpr annotation : n.getAnnotations()) {
+						String annotationClass = resolveClass(importLookup, packageName, annotation.getName().getName());
+						if (annotationClass.equals(org.webseer.java.Type.class.getName())) {
+							// We know this is a class transformation
+							System.out.println("Class transform = " + n.getName());
+							transform[0] = annotation;
+						}
+					}
+				}
+				super.visit(n, arg);
+			}
+
+			public void visit(FieldDeclaration field, Object o) {
+				fields.add(field);
+				super.visit(field, o);
+			}
+
+		};
+
+		cu.accept(visitor, null);
+
+		if (transform[0] == null) {
+			return Collections.emptyList();
 		}
 		Type type = new Type(service, qualifiedName);
 
 		// Read all the fields
-		Field[] fields = clazz.getFields();
-		for (Field field : fields) {
-			java.lang.reflect.Type fieldType = field.getGenericType();
-			if (factory.getType(getTypeName(fieldType)) != null) {
-				Type typeObject = factory.getType(getTypeName(fieldType));
-				type.addField(service, typeObject, field.getName(), false);
-			} else if (fieldType instanceof Class<?> && ((Class<?>) fieldType).isArray()) {
-				// Repeated
-				Class<?> componentType = ((Class<?>) fieldType).getComponentType();
-				if (factory.getType(getTypeName(componentType)) != null) {
-					Type typeObject = factory.getType(getTypeName(componentType));
-					type.addField(service, typeObject, field.getName(), true);
+		for (FieldDeclaration field : fields) {
+			Type fieldType = getSimpleType(factory, importLookup, packageName, field.getType());
+			if (fieldType == null) {
+				// array
+				if (field.getType() instanceof ReferenceType) {
+					japa.parser.ast.type.Type referencedType = ((ReferenceType) field.getType()).getType();
+					fieldType = getSimpleType(factory, importLookup, packageName, referencedType);
 				}
-			}
+				type.addField(service, fieldType, field.getVariables().get(0).getId().getName(), true);
+			} else {
+				type.addField(service, fieldType, field.getVariables().get(0).getId().getName(), false);
 
+			}
 		}
 
 		// Put code in
 		type.setVersion(version);
 
-		return type;
+		return Collections.singleton(type);
 	}
 
 	public static String getTypeName(java.lang.reflect.Type typeClazz) {
@@ -668,6 +926,21 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 	public Library generateLibrary(GraphDatabaseService service, String packageName, String libraryName,
 			String version, InputStream libraryData) throws IOException {
 		log.info("Generating java library for {} in group {} with version {}", libraryName, packageName, version);
-		return new Library(service, packageName, libraryName, version, IOUtils.toByteArray(libraryData));
+		byte[] jarBytes = IOUtils.toByteArray(libraryData);
+		Library library = new Library(service, packageName, libraryName, version, jarBytes);
+		JarInputStream jarIn = new JarInputStream(new ByteArrayInputStream(jarBytes));
+		try {
+			JarEntry entry;
+			while ((entry = jarIn.getNextJarEntry()) != null) {
+				if (entry.getName().endsWith(".class")) {
+					byte[] classBuffer = IOUtils.toByteArray(jarIn);
+					new LibraryResource(service, library, entry.getName().substring(0, entry.getName().length() - 6)
+							.replace('/', '.'), classBuffer);
+				}
+			}
+		} finally {
+			jarIn.close();
+		}
+		return library;
 	}
 }

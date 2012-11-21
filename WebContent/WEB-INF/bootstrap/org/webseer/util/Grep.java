@@ -6,14 +6,16 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.webseer.java.FunctionDef;
+import org.webseer.java.InputChannel;
 import org.webseer.java.JavaFunction;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
+import org.webseer.java.OutputChannel;
 import org.webseer.transformation.OutputWriter;
 
 /**
  * Returns lines that match a certain regex pattern.
  */
+@FunctionDef
 public class Grep implements JavaFunction {
 
 	@InputChannel

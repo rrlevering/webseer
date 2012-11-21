@@ -2,7 +2,7 @@ package org.webseer.transformation;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +12,7 @@ import org.webseer.model.meta.Library;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.Type;
+import org.webseer.proto.ProtocolBufferFactory;
 import org.webseer.type.LanguageTypeFactory;
 
 public class LanguageFactory {
@@ -42,11 +43,15 @@ public class LanguageFactory {
 		transformationExtensions.put("java", "Java");
 		typeExtensions.put("java", "Java");
 		libraryExtensions.put("jar", "Java");
+		
+		ProtocolBufferFactory proto = new ProtocolBufferFactory();
+		types.put("Proto", proto);
+		typeExtensions.put("proto", "Proto");
 	}
 
-	public Transformation generateTransformation(String language, GraphDatabaseService service, String qualifiedName,
-			Reader reader, long version) throws IOException {
-		return transformations.get(language).generateTransformation(service, qualifiedName, reader, version);
+	public Collection<Transformation> generateTransformations(String language, GraphDatabaseService service, String qualifiedName,
+			InputStream reader, long version) throws IOException, TransformationException {
+		return transformations.get(language).generateTransformations(service, qualifiedName, reader, version);
 	}
 
 	public PullRuntimeTransformation generatePullTransformation(Transformation transformation)
@@ -54,9 +59,9 @@ public class LanguageFactory {
 		return transformations.get(transformation.getLanguage()).generatePullTransformation(transformation);
 	}
 
-	public Type generateType(String language, GraphDatabaseService service, String qualifiedName, Reader reader,
-			long version) throws IOException {
-		return types.get(language).generateType(service, qualifiedName, reader, version);
+	public Collection<Type> generateTypes(String language, GraphDatabaseService service, String qualifiedName, InputStream reader,
+			long version) throws IOException, TransformationException {
+		return types.get(language).generateTypes(service, qualifiedName, reader, version);
 	}
 
 	public Library generateLibrary(String language, GraphDatabaseService service, String packageName,

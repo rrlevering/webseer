@@ -1,6 +1,6 @@
 package org.webseer.classification;
 
-import org.webseer.type.Type;
+import org.webseer.java.Type;
 
 @Type
 public class FeatureRecord {

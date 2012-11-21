@@ -7,20 +7,18 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.TransformationException;
-import org.webseer.transformation.InputChannel;
-import org.webseer.transformation.OutputChannel;
 import org.webseer.transformation.PushRuntimeTransformation;
 import org.webseer.visitor.AggregateSuperVisitor;
 import org.webseer.visitor.ReflectiveSuperVisitor;
 import org.webseer.visitor.SuperVisitor;
 
-public abstract class JavaTransformation implements PushRuntimeTransformation {
+public abstract class JavaPushTransformation implements PushRuntimeTransformation {
 
-	private static final Logger log = LoggerFactory.getLogger(JavaTransformation.class);
+	private static final Logger log = LoggerFactory.getLogger(JavaPushTransformation.class);
 
 	private Map<String, AggregateSuperVisitor<SuperVisitor>> listeners = new HashMap<String, AggregateSuperVisitor<SuperVisitor>>();
 
-	protected JavaTransformation() {
+	protected JavaPushTransformation() {
 		// Add visitors to the output channels
 		for (Field f : getClass().getDeclaredFields()) {
 			if (f.isAnnotationPresent(OutputChannel.class)) {
@@ -140,10 +138,10 @@ public abstract class JavaTransformation implements PushRuntimeTransformation {
 			if (o != null) {
 				try {
 					if (field.getType().isAssignableFrom(o.getClass())) {
-						field.set(JavaTransformation.this, o);
+						field.set(JavaPushTransformation.this, o);
 					} else if (o instanceof String) {
 						if (field.getType().equals(Integer.TYPE)) {
-							field.setInt(JavaTransformation.this, Integer.parseInt((String) o));
+							field.setInt(JavaPushTransformation.this, Integer.parseInt((String) o));
 						}
 					} else {
 						log.debug("Cannot assign object of type %1 to field of type %2", o.getClass(), field.getType());

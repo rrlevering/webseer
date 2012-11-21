@@ -9,6 +9,7 @@ import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Library;
+import org.webseer.model.meta.LibraryResource;
 import org.webseer.model.meta.Neo4JMetaUtils;
 
 public class LibraryFactory {
@@ -44,6 +45,16 @@ public class LibraryFactory {
 	public Iterable<Library> getAllLibraries() {
 		return Neo4JUtils.getIterable(underlyingNode,
 				NeoRelationshipType.LIBRARY_FACTORY_LIBRARY, Library.class);
+	}
+	
+	public LibraryResource getResource(String name) {
+		for (Library library : getAllLibraries()) {
+			LibraryResource resource = library.getResource(name);
+			if (resource != null) {
+				return resource;
+			}
+		}
+		return null;
 	}
 
 	public void removeLibrary(Library library) {
