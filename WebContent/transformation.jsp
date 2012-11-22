@@ -5,7 +5,7 @@
 </jsp:include>
 <link href="<c:url value="/lib/prettify/prettify.css" />" type="text/css" rel="stylesheet" />
 <script type="text/javascript" src="<c:url value="/lib/prettify/prettify.js" />" ></script>
-<div style="font-weight:bold;margin:10 0 10 0">${transformation.simpleName}<br /><span style="font-size:75%">${transformation.name} (v${transformation.version})</span></div>
+<div style="font-weight:bold;margin:10 0 10 0">${transformation.simpleName}<br /><span style="font-size:75%">${transformation.name} (v${source.version})</span></div>
 <div style="margin:10 0 10 0">${transformation.description }</div>
 <c:if test="${fn:length(transformation.keyWords) > 0 }">
 	<div style="margin:10 0 10 0">Keywords:
@@ -56,7 +56,7 @@
 </c:if>
 <div>Language: ${transformation.language }</div>
 <div>Runtime: ${transformation.runtime }</div>
-<pre style="font-size:75%" class="prettyprint">${transformation.code }</pre>
+<pre style="font-size:75%" class="prettyprint"><c:out value="${source.code }" /></pre>
 <script>
 prettyPrint();
 </script>

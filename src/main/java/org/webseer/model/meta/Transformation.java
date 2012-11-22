@@ -20,10 +20,6 @@ public class Transformation {
 
 	private static final String DESCRIPTION = "description";
 
-	private static final String CODE = "code";
-
-	private static final String VERSION = "version";
-
 	private static final String KEYWORDS = "keywords";
 
 	private final Node underlyingNode;
@@ -70,18 +66,6 @@ public class Transformation {
 		return Neo4JUtils.getString(underlyingNode, DESCRIPTION);
 	}
 
-	public String getCode() {
-		return Neo4JUtils.getString(underlyingNode, CODE);
-	}
-
-	public void setCode(String string) {
-		underlyingNode.setProperty(CODE, string);
-	}
-
-	public Long getVersion() {
-		return Neo4JUtils.getLong(underlyingNode, VERSION);
-	}
-
 	public String getLanguage() {
 		return "Java";
 	}
@@ -102,6 +86,10 @@ public class Transformation {
 	public Iterable<Library> getLibraries() {
 		return Neo4JUtils
 				.getIterable(underlyingNode, NeoRelationshipType.TRANSFORMATION_LIBRARY, Library.class);
+	}
+	
+	public SourceFile getSource() {
+		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.TRANSFORMATION_SOURCE, SourceFile.class);
 	}
 
 	public OutputPoint getOutput(String name) {
@@ -131,10 +119,6 @@ public class Transformation {
 
 	public String toString() {
 		return "Transformation[" + getName() + "]";
-	}
-
-	public void setVersion(long version) {
-		underlyingNode.setProperty(VERSION, version);
 	}
 
 }

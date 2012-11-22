@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -74,6 +76,7 @@ import org.webseer.model.meta.Library;
 import org.webseer.model.meta.LibraryResource;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.OutputPoint;
+import org.webseer.model.meta.SourceFile;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.TransformationField;
@@ -113,8 +116,8 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 			throws TransformationException {
 
 		// Write out the Java source
-		String className = transformation.getName();
-		String code = transformation.getCode();
+		String className = transformation.getSource().getName();
+		String code = transformation.getSource().getCode();
 
 		// Get all the dependent types
 		List<Type> types = new ArrayList<Type>();
@@ -125,20 +128,47 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 			types.add(output.getType());
 		}
 
-		JavaFunction object;
-		try {
-			Class<?> clazz = getClass(className, new StringReader(code), types, transformation.getLibraries());
-			object = (JavaFunction) clazz.newInstance();
-		} catch (InstantiationException e) {
-			throw new TransformationException("Unable to instantiate user code", e);
-		} catch (IllegalAccessException e) {
-			throw new TransformationException("Unable to instantiate user code", e);
-		} catch (IOException e) {
-			throw new TransformationException("Unable to instantiate user code", e);
-		}
+		if (className.equals(transformation.getName())) {
 
-		// Load and wrap the object with a java transformation wrapper
-		return new ClassTransformation(object);
+			JavaFunction object;
+			try {
+				Class<?> clazz = getClass(className, new StringReader(code), types, transformation.getLibraries());
+				object = (JavaFunction) clazz.newInstance();
+			} catch (InstantiationException e) {
+				throw new TransformationException("Unable to instantiate user code", e);
+			} catch (IllegalAccessException e) {
+				throw new TransformationException("Unable to instantiate user code", e);
+			} catch (IOException e) {
+				throw new TransformationException("Unable to instantiate user code", e);
+			}
+
+			// Load and wrap the object with a java transformation wrapper
+			return new ClassTransformation(object);
+		} else {
+			String methodName = transformation.getName().substring(className.length() + 1);
+			try {
+				Class<?> clazz = getClass(className, new StringReader(code), types, transformation.getLibraries());
+				
+				Method toRun = null;
+				Object object = null;
+				for (Method m : clazz.getMethods()) {
+					if (m.getName().equals(methodName)) {
+						// FIXME...awful match
+						toRun = m;
+					}
+				}
+				if (!Modifier.isStatic(toRun.getModifiers())) {
+					object = clazz.newInstance();
+				}
+				return new MethodTransformation(transformation, toRun, object);
+			} catch (InstantiationException e) {
+				throw new TransformationException("Unable to instantiate user code", e);
+			} catch (IllegalAccessException e) {
+				throw new TransformationException("Unable to instantiate user code", e);
+			} catch (IOException e) {
+				throw new TransformationException("Unable to instantiate user code", e);
+			}
+		}
 	}
 
 	private Class<?> getClass(String className, Reader source, Iterable<Type> types, Iterable<Library> dependencies)
@@ -476,8 +506,9 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 	 * dependent classes.
 	 */
 	@Override
-	public Collection<Transformation> generateTransformations(final GraphDatabaseService service, String qualifiedName,
-			InputStream reader, final long version) throws IOException, TransformationException {
+	public Collection<Transformation> generateTransformations(final GraphDatabaseService service,
+			final String qualifiedName, InputStream reader, final long version) throws IOException,
+			TransformationException {
 		final TypeFactory factory = TypeFactory.getTypeFactory(service, true);
 
 		LibraryFactory libraryFactory = LibraryFactory.getLibraryFactory(service, true);
@@ -511,14 +542,8 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 			String className = importName.toString();
 			importLookup.put(importName.getName(), importName.toString());
 
-			Type type = factory.getType(className);
-			if (type != null) {
-				System.out.println("Found type for " + type.getName());
-			}
-
 			LibraryResource resource = libraryFactory.getResource(className);
 			if (resource != null) {
-				System.out.println("Found library file for " + resource.getName());
 				libraries.add(resource.getLibrary());
 			}
 		}
@@ -538,7 +563,6 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 						String annotationClass = resolveClass(importLookup, packageName, annotation.getName().getName());
 						if (annotationClass.equals(FunctionDef.class.getName())) {
 							// We know this is a class transformation
-							System.out.println("Class transform = " + n.getName());
 							transform[0] = annotation;
 						}
 					}
@@ -552,11 +576,9 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 						String annotationClass = resolveClass(importLookup, packageName, annotation.getName().getName());
 						if (annotationClass.equals(InputChannel.class.getName())) {
 							// Add this to the input channel list for when we create the class transformation
-							System.out.println("Input = " + field.getVariables());
 							inputFields.add(field);
 						} else if (annotationClass.equals(OutputChannel.class.getName())) {
 							// Add this to the output channel list for when we create the class transformation
-							System.out.println("Output = " + field.getVariables());
 							outputFields.add(field);
 						}
 					}
@@ -570,10 +592,8 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 						String annotationClass = resolveClass(importLookup, packageName, annotation.getName().getName());
 						if (annotationClass.equals(FunctionDef.class.getName())) {
 							// We know this is a method transformation
-							System.out.println("Method transform = " + method.getName());
-							Transformation methodTransformation = new Transformation(service, method.getName());
-							methodTransformation.setCode(code);
-							methodTransformation.setVersion(version);
+							Transformation methodTransformation = new Transformation(service, qualifiedName + "."
+									+ method.getName());
 
 							addTransformationMetaInformation(methodTransformation, annotation);
 
@@ -605,8 +625,6 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 		if (transform[0] != null) {
 			// Generate a class transform
 			Transformation classTransformation = new Transformation(service, qualifiedName);
-			classTransformation.setCode(code);
-			classTransformation.setVersion(version);
 			addTransformationMetaInformation(classTransformation, transform[0]);
 			for (FieldDeclaration inputField : inputFields) {
 				createInputPoint(service, importLookup, packageName, factory, classTransformation,
@@ -620,6 +638,13 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory, Langua
 			for (Library library : libraries) {
 				Neo4JMetaUtils.getNode(classTransformation).createRelationshipTo(Neo4JMetaUtils.getNode(library),
 						NeoRelationshipType.TRANSFORMATION_LIBRARY);
+			}
+		}
+
+		if (!transformations.isEmpty()) {
+			SourceFile source = new SourceFile(service, qualifiedName, code, version);
+			for (Transformation transformation : transformations) {
+				source.addTransformation(transformation);
 			}
 		}
 

@@ -3,7 +3,7 @@
 <jsp:include page="includes/big-header.jsp">
 	<jsp:param value="index-tabs" name="tabId" />
 </jsp:include>
-<div style="font-weight:bold;margin:10 0 10 0">${transformation.simpleName}<br /><span style="font-size:75%">${transformation.name} (v${transformation.version})</span></div>
+<div style="font-weight:bold;margin:10 0 10 0">${transformation.simpleName}<br /><span style="font-size:75%">${transformation.name} (v${source.version})</span></div>
 
 
 <div style="margin-bottom:10px">

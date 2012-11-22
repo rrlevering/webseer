@@ -246,7 +246,8 @@ public class Bootstrapper {
 				if (existingTransform == null) {
 					transformations.addTransformation(parsedTransform);
 					log.info("Added transformation: " + parsedTransform.getName());
-				} else if (existingTransform.getVersion() == null || existingTransform.getVersion() < modified) {
+				} else if (existingTransform.getSource().getVersion() == null
+						|| existingTransform.getSource().getVersion() < modified) {
 					transformations.removeTransformation(existingTransform);
 					transformations.addTransformation(parsedTransform);
 					log.info("Replaced transformation: " + parsedTransform.getName());

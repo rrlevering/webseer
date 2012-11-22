@@ -263,7 +263,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		JsonObject container = new JsonObject();
 		container.add("xtype", new JsonPrimitive("Webseer.WebseerContainer"));
 		container.add("typeId", new JsonPrimitive(transformation.getName()));
-		container.add("version", new JsonPrimitive(transformation.getVersion()));
+		container.add("version", new JsonPrimitive(transformation.getSource().getVersion()));
 		container.add("title", new JsonPrimitive(transformation.getSimpleName()));
 		container.add(
 				"height",
@@ -310,7 +310,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		transformationObject.add("container", container);
 		container.add("xtype", new JsonPrimitive("Webseer.RendererContainer"));
 		container.add("typeId", new JsonPrimitive(transformation.getName()));
-		container.add("version", new JsonPrimitive(transformation.getVersion()));
+		container.add("version", new JsonPrimitive(transformation.getSource().getVersion()));
 		container.add("height", new JsonPrimitive(50 + 30 * IterableUtils.size(transformation.getInputPoints())));
 		JsonArray terminals = new JsonArray();
 		container.add("terminals", terminals);
@@ -559,7 +559,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 			// LOG
 			return new JsonObject();
 		}
-		return new JsonPrimitive(StringEscapeUtils.escapeHtml(node.getTransformation().getCode()));
+		return new JsonPrimitive(StringEscapeUtils.escapeHtml(node.getTransformation().getSource().getCode()));
 	}
 
 	private JsonElement moveContainer(JsonElement params, Program mainProgram) {

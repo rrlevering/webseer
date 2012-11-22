@@ -16,6 +16,7 @@ import org.webseer.model.UserFactory;
 import org.webseer.model.meta.InputPoint;
 import org.webseer.model.meta.InputType;
 import org.webseer.model.meta.OutputPoint;
+import org.webseer.model.meta.SourceFile;
 import org.webseer.model.meta.Transformation;
 import org.webseer.streams.model.PreviewBuffer;
 import org.webseer.streams.model.Workspace;
@@ -89,13 +90,13 @@ public class WebseerTests extends TestCase {
 
 			Transformation transformation = new Transformation(neo, GENERATE_FUNCTION_NAME);
 
-			assertNull(transformation.getCode());
 			assertNull(transformation.getDescription());
 
-			transformation.setCode(GENERATE_FUNCTION);
+			SourceFile source = new SourceFile(neo, GENERATE_FUNCTION_NAME, GENERATE_FUNCTION, 1L);
+			source.addTransformation(transformation);
 			transformation.setDescription("Cool function");
 
-			assertEquals(GENERATE_FUNCTION, transformation.getCode());
+			assertEquals(GENERATE_FUNCTION, transformation.getSource().getCode());
 			assertEquals("Cool function", transformation.getDescription());
 
 			assertEmpty(transformation.getOutputPoints());
@@ -118,7 +119,7 @@ public class WebseerTests extends TestCase {
 			Transformation transformation = getSingle(factory.getAllTransformations());
 
 			assertEquals(GENERATE_FUNCTION_NAME, transformation.getName());
-			assertEquals(GENERATE_FUNCTION, transformation.getCode());
+			assertEquals(GENERATE_FUNCTION, transformation.getSource().getCode());
 			assertEquals("Cool function", transformation.getDescription());
 
 			OutputPoint connected = getSingle(transformation.getOutputPoints());
@@ -802,21 +803,24 @@ public class WebseerTests extends TestCase {
 			TypeFactory typeFactory = TypeFactory.getTypeFactory(neo);
 
 			Transformation transformation = new Transformation(neo, GENERATE_FUNCTION_NAME);
-			transformation.setCode(GENERATE_FUNCTION);
+			SourceFile source = new SourceFile(neo, GENERATE_FUNCTION_NAME, GENERATE_FUNCTION, 1L);
+			source.addTransformation(transformation);
 			transformation.setDescription("Cool function");
 			new OutputPoint(neo, transformation, "generatedString", typeFactory.getType("string"));
 
 			factory.addTransformation(transformation);
 
 			transformation = new Transformation(neo, TIME_FUNCTION_NAME);
-			transformation.setCode(TIME_FUNCTION);
+			source = new SourceFile(neo, TIME_FUNCTION_NAME, TIME_FUNCTION, 1L);
+			source.addTransformation(transformation);
 			transformation.setDescription("Outputs the current time");
 			new OutputPoint(neo, transformation, "currentTime", typeFactory.getType("int64"));
 
 			factory.addTransformation(transformation);
 
 			transformation = new Transformation(neo, CONVERT_FUNCTION_NAME);
-			transformation.setCode(CONVERT_FUNCTION);
+			source = new SourceFile(neo, CONVERT_FUNCTION_NAME, CONVERT_FUNCTION, 1L);
+			source.addTransformation(transformation);
 			transformation.setDescription("Cool function");
 			new OutputPoint(neo, transformation, "convertedString", typeFactory.getType("string"));
 			new InputPoint(neo, transformation, "toConvert", typeFactory.getType("string"), InputType.SERIAL, true,
@@ -825,14 +829,16 @@ public class WebseerTests extends TestCase {
 			factory.addTransformation(transformation);
 
 			transformation = new Transformation(neo, GENERATE_MULTI_FUNCTION_NAME);
-			transformation.setCode(GENERATE_MULTI_FUNCTION);
+			source = new SourceFile(neo, GENERATE_MULTI_FUNCTION_NAME, GENERATE_MULTI_FUNCTION, 1L);
+			source.addTransformation(transformation);
 			transformation.setDescription("Cool function");
 			new OutputPoint(neo, transformation, "generatedStrings", typeFactory.getType("string"));
 
 			factory.addTransformation(transformation);
 
 			transformation = new Transformation(neo, OUTPUTS_FUNCTION_NAME);
-			transformation.setCode(OUTPUTS_FUNCTION);
+			source = new SourceFile(neo, OUTPUTS_FUNCTION_NAME, OUTPUTS_FUNCTION, 1L);
+			source.addTransformation(transformation);
 			transformation.setDescription("Two outputs");
 			new OutputPoint(neo, transformation, "firstString", typeFactory.getType("string"));
 			new OutputPoint(neo, transformation, "secondString", typeFactory.getType("string"));
@@ -840,7 +846,8 @@ public class WebseerTests extends TestCase {
 			factory.addTransformation(transformation);
 
 			transformation = new Transformation(neo, COUNT_FUNCTION_NAME);
-			transformation.setCode(COUNT_FUNCTION);
+			source = new SourceFile(neo, COUNT_FUNCTION_NAME, COUNT_FUNCTION, 1L);
+			source.addTransformation(transformation);
 			transformation.setDescription("Counts the number of items");
 			new InputPoint(neo, transformation, "toCount", typeFactory.getType("string"), InputType.AGGREGATE, true,
 					false);

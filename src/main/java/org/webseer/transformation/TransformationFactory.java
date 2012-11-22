@@ -65,12 +65,14 @@ public class TransformationFactory {
 	public Transformation getLatestTransformationByName(String name) {
 		Transformation latest = null;
 		Long version = null;
-		for (Transformation type : getAllTransformations()) {
-			if (type.getName().equals(name)) {
-				if (latest == null || (version == null && type.getVersion() != null)
-						|| (version != null && type.getVersion() != null && version < type.getVersion())) {
-					latest = type;
-					version = type.getVersion();
+		for (Transformation transform : getAllTransformations()) {
+			if (transform.getName().equals(name)) {
+				if (latest == null
+						|| (version == null && transform.getSource().getVersion() != null)
+						|| (version != null && transform.getSource().getVersion() != null && version < transform
+								.getSource().getVersion())) {
+					latest = transform;
+					version = transform.getSource().getVersion();
 				}
 			}
 		}
@@ -78,9 +80,9 @@ public class TransformationFactory {
 	}
 
 	public Transformation getTransformation(long id) {
-		for (Transformation type : getAllTransformations()) {
-			if (Neo4JMetaUtils.getNode(type).getId() == id) {
-				return type;
+		for (Transformation transform : getAllTransformations()) {
+			if (Neo4JMetaUtils.getNode(transform).getId() == id) {
+				return transform;
 			}
 		}
 		return null;
@@ -119,6 +121,5 @@ public class TransformationFactory {
 		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.TRANSFORMATION_FACTORY_BUCKET,
 				Transformation.class);
 	}
-
 
 }

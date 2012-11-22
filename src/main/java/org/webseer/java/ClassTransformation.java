@@ -22,7 +22,7 @@ import org.webseer.transformation.TransformationListener;
 
 public class ClassTransformation extends JavaPullTransformation {
 
-	private static final Logger log = LoggerFactory.getLogger(JavaPullTransformation.class);
+	private static final Logger log = LoggerFactory.getLogger(ClassTransformation.class);
 
 	private final Map<String, List<Iterator<Object>>> inputs = new HashMap<String, List<Iterator<Object>>>();
 

@@ -40,6 +40,7 @@ public class ViewTransformation extends SeerServlet {
 		Transformation transformation = factory.getLatestTransformationByName(transformationName);
 		
 		request.setAttribute("transformation", transformation);
+		request.setAttribute("source", transformation.getSource());
 
 		RequestDispatcher rd = request.getRequestDispatcher("transformation.jsp");
 		rd.forward(request, response);
@@ -91,6 +92,7 @@ public class ViewTransformation extends SeerServlet {
 		}
 
 		request.setAttribute("transformation", transformation);
+		request.setAttribute("source", transformation.getSource());
 		request.setAttribute("outputs", outputs);
 		request.setAttribute("inputs", inputs);
 

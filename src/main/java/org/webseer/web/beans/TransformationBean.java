@@ -44,7 +44,7 @@ public class TransformationBean {
 		this.bucket = false;
 		this.description = transformation.getDescription();
 		this.id = Neo4JMetaUtils.getNode(transformation).getId();
-		this.version = transformation.getVersion();
+		this.version = transformation.getSource().getVersion();
 		this.inputs = new InputBean[IterableUtils.size(transformation.getInputPoints())];
 		int i = 0;
 		for (InputPoint input : transformation.getInputPoints()) {
