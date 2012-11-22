@@ -68,4 +68,19 @@ public class Library {
 		return underlyingNode;
 	}
 
+	public int hashCode() {
+		return this.underlyingNode.hashCode();
+	}
+
+	public boolean equals(Object o) {
+		if (!(o instanceof Library)) {
+			return false;
+		}
+		return ((Library) o).getUnderlyingNode().equals(underlyingNode);
+	}
+
+	public String toString() {
+		return "Library[" + getName() + "]";
+	}
+
 }
