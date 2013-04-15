@@ -26,11 +26,11 @@ public class ClassTransformation extends JavaPullTransformation {
 
 	private final Map<String, List<Iterator<Object>>> inputs = new HashMap<String, List<Iterator<Object>>>();
 
-	private final JavaFunction object;
+	private final Object object;
 	
 	private boolean runOnce = false;
 
-	public ClassTransformation(JavaFunction object) {
+	public ClassTransformation(Object object) {
 		this.object = object;
 	}
 
@@ -62,7 +62,7 @@ public class ClassTransformation extends JavaPullTransformation {
 		}
 
 		// Pull inputs, doing source synchronization
-		Class<? extends JavaFunction> objectClass = object.getClass();
+		Class<? extends Object> objectClass = object.getClass();
 		for (final String input : readers.keySet()) {
 			String[] path = input.split("\\.");
 			Field f = null;
@@ -168,7 +168,7 @@ public class ClassTransformation extends JavaPullTransformation {
 		}
 
 		try {
-			object.execute();
+			objectClass.getMethod("execute").invoke(object);
 		} catch (Throwable e) {
 			throw new RuntimeTransformationException(e);
 		}

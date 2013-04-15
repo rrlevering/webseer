@@ -15,12 +15,8 @@ public class TransformationField {
 
 	protected final Node underlyingNode;
 
-	public TransformationField(GraphDatabaseService service, TransformationField parentField, Field field) {
+	public TransformationField(GraphDatabaseService service, Field field) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
-		if (parentField != null) {
-			this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(parentField),
-					NeoRelationshipType.TRANSFORMATIONFIELD_PARENT);
-		}
 		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(field),
 				NeoRelationshipType.TRANSFORMATIONFIELD_FIELD);
 	}
@@ -30,15 +26,7 @@ public class TransformationField {
 	}
 
 	public String getName() {
-		if (getParent() != null) {
-			return getParent().getName() + "." + getField().getName();
-		}
 		return getField().getName();
-	}
-
-	public TransformationField getParent() {
-		return Neo4JUtils.getOutgoing(underlyingNode, NeoRelationshipType.TRANSFORMATIONFIELD_PARENT,
-				TransformationField.class);
 	}
 
 	public Field getField() {
@@ -73,11 +61,6 @@ public class TransformationField {
 
 	public InputType getInputType() {
 		return InputType.SERIAL;
-	}
-
-	public Iterable<TransformationField> getChildren() {
-		return Neo4JUtils.getIterable(underlyingNode, NeoRelationshipType.TRANSFORMATIONFIELD_PARENT,
-				Direction.INCOMING, TransformationField.class);
 	}
 
 }

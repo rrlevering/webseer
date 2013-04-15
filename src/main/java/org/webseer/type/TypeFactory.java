@@ -14,7 +14,6 @@ import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
 import org.webseer.model.meta.Type;
-import org.webseer.transformation.Bootstrapper;
 
 import com.google.protobuf.ByteString;
 
@@ -40,7 +39,7 @@ public class TypeFactory {
 		}
 
 		// Number/string casts
-		casters.put(getType("string"), getType("int32"), new CastFunction() {
+		casters.put("string", "int32", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -53,7 +52,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("int32"), getType("string"), new CastFunction() {
+		casters.put("int32", "string", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -62,7 +61,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("string"), getType("int64"), new CastFunction() {
+		casters.put("string", "int64", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -75,7 +74,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("int64"), getType("string"), new CastFunction() {
+		casters.put("int64", "string", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -84,7 +83,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("string"), getType("double"), new CastFunction() {
+		casters.put("string", "double", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -97,7 +96,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("double"), getType("string"), new CastFunction() {
+		casters.put("double", "string", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -106,7 +105,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("string"), getType("float"), new CastFunction() {
+		casters.put("string", "float", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -119,7 +118,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("float"), getType("string"), new CastFunction() {
+		casters.put("float", "string", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -128,7 +127,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("string"), getType("bool"), new CastFunction() {
+		casters.put("string", "bool", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -141,7 +140,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("bool"), getType("string"), new CastFunction() {
+		casters.put("bool", "string", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -150,7 +149,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("string"), getType("bytes"), new CastFunction() {
+		casters.put("string", "bytes", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -163,7 +162,7 @@ public class TypeFactory {
 			}
 
 		});
-		casters.put(getType("bytes"), getType("string"), new CastFunction() {
+		casters.put("bytes", "string", new CastFunction() {
 
 			@Override
 			public Object cast(Object object) throws CastException {
@@ -191,12 +190,9 @@ public class TypeFactory {
 
 	public static TypeFactory getTypeFactory(GraphDatabaseService service, boolean bootstrap) {
 		if (!SINGLETON.containsKey(service)) {
-			TypeFactory factory = Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_TYPE_FACTORY,
+			TypeFactory factory = Neo4JUtils.getSingleton(service, 
 					TypeFactory.class);
 			factory.bootstrapPrimitives(service);
-			if (bootstrap) {
-				Bootstrapper.bootstrapBuiltins(service);
-			}
 			SINGLETON.put(service, factory);
 		}
 		TypeFactory factory = SINGLETON.get(service);
@@ -235,13 +231,13 @@ public class TypeFactory {
 		return ((TypeFactory) o).getUnderlyingNode().equals(underlyingNode);
 	}
 
-	private BiMap<Type, Type, CastFunction> casters = new HashBiMap<Type, Type, CastFunction>();
+	private BiMap<String, String, CastFunction> casters = new HashBiMap<String, String, CastFunction>();
 
 	public Object cast(Object object, Type sourceType, Type targetType) {
-		if (sourceType.equals(targetType)) {
+		if (sourceType.getName().equals(targetType.getName())) {
 			return object;
 		}
-		CastFunction caster = casters.get(sourceType, targetType);
+		CastFunction caster = casters.get(sourceType.getName(), targetType.getName());
 		if (caster == null) {
 			throw new RuntimeException("Can't cast type " + sourceType + " to " + targetType);
 		}

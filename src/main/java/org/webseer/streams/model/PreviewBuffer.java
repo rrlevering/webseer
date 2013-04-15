@@ -5,7 +5,6 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.webseer.model.Neo4JUtils;
-import org.webseer.model.NeoRelationshipType;
 
 /**
  * This is used to keep track of all the preview buckets so they can be cleaned up. We hold each transformation edge
@@ -20,7 +19,7 @@ public class PreviewBuffer {
 	}
 
 	public static PreviewBuffer getPreviewBuffer(GraphDatabaseService service) {
-		return Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_PREVIEW, PreviewBuffer.class);
+		return Neo4JUtils.getSingleton(service, PreviewBuffer.class);
 	}
 
 	Node getUnderlyingNode() {

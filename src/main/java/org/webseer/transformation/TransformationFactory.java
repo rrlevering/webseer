@@ -4,16 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
-import org.webseer.model.meta.InputPoint;
-import org.webseer.model.meta.InputType;
 import org.webseer.model.meta.Neo4JMetaUtils;
-import org.webseer.model.meta.OutputPoint;
 import org.webseer.model.meta.Transformation;
-import org.webseer.type.TypeFactory;
+import org.webseer.model.meta.WorkspaceBucketTransformation;
 
 public class TransformationFactory {
 
@@ -26,11 +25,15 @@ public class TransformationFactory {
 	}
 
 	public void addTransformation(Transformation type) {
-		if (getLatestTransformationByName(type.getName()) != null) {
-			throw new RuntimeException("Can't add a type with the same name");
+		DynamicRelationshipType edge = DynamicRelationshipType.withName(type.getName());
+		Transformation currentTransformation = Neo4JUtils.getLinked(underlyingNode, edge, Transformation.class);
+		if (currentTransformation != null) {
+			Relationship rel = underlyingNode.getSingleRelationship(edge, Direction.OUTGOING);
+			rel.delete();
+			Neo4JMetaUtils.getNode(type).createRelationshipTo(Neo4JMetaUtils.getNode(currentTransformation),
+					NeoRelationshipType.TRANSFORMATION_LAST_VERSION);
 		}
-		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(type),
-				NeoRelationshipType.TRANSFORMATION_FACTORY_TRANSFORMATION);
+		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(type), edge);
 	}
 
 	public void removeTransformation(Transformation type) {
@@ -46,11 +49,8 @@ public class TransformationFactory {
 	public static TransformationFactory getTransformationFactory(GraphDatabaseService service, boolean bootstrap) {
 		if (!SINGLETON.containsKey(service)) {
 			TransformationFactory factory = Neo4JUtils.getSingleton(service,
-					NeoRelationshipType.REFERENCE_TRANSFORMATION_FACTORY, TransformationFactory.class);
+					TransformationFactory.class);
 			SINGLETON.put(service, factory);
-			if (bootstrap) {
-				Bootstrapper.bootstrapBuiltins(service);
-			}
 			return factory;
 		}
 		TransformationFactory factory = SINGLETON.get(service);
@@ -63,20 +63,8 @@ public class TransformationFactory {
 	}
 
 	public Transformation getLatestTransformationByName(String name) {
-		Transformation latest = null;
-		Long version = null;
-		for (Transformation transform : getAllTransformations()) {
-			if (transform.getName().equals(name)) {
-				if (latest == null
-						|| (version == null && transform.getSource().getVersion() != null)
-						|| (version != null && transform.getSource().getVersion() != null && version < transform
-								.getSource().getVersion())) {
-					latest = transform;
-					version = transform.getSource().getVersion();
-				}
-			}
-		}
-		return latest;
+		DynamicRelationshipType edge = DynamicRelationshipType.withName(name);
+		return Neo4JUtils.getLinked(underlyingNode, edge, Transformation.class);
 	}
 
 	public Transformation getTransformation(long id) {
@@ -89,12 +77,11 @@ public class TransformationFactory {
 	}
 
 	public Iterable<Transformation> getAllTransformations() {
-		return Neo4JUtils.getIterable(underlyingNode, NeoRelationshipType.TRANSFORMATION_FACTORY_TRANSFORMATION,
-				Transformation.class);
+		return Neo4JUtils.getIterable(underlyingNode, Transformation.class);
 	}
 
 	public String toString() {
-		return "TransformationFactory";
+		return "TransformationFactory[" + underlyingNode.getId() + "]";
 	}
 
 	public int hashCode() {
@@ -111,10 +98,7 @@ public class TransformationFactory {
 	public Transformation getBucketTransformation(GraphDatabaseService service) {
 		if (Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.TRANSFORMATION_FACTORY_BUCKET,
 				Transformation.class) == null) {
-			Transformation trans = new Transformation(service, "Workspace Bucket");
-			new InputPoint(service, trans, "itemToAdd", TypeFactory.getTypeFactory(service).getType("string"),
-					InputType.SERIAL, true, false);
-			new OutputPoint(service, trans, "itemToOutput", TypeFactory.getTypeFactory(service).getType("string"));
+			Transformation trans = new WorkspaceBucketTransformation(service);
 			underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(trans),
 					NeoRelationshipType.TRANSFORMATION_FACTORY_BUCKET);
 		}

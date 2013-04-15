@@ -11,12 +11,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.webseer.java.JavaTransformation;
 import org.webseer.model.meta.InputPoint;
 import org.webseer.model.meta.OutputPoint;
-import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.transformation.InputReaders;
-import org.webseer.transformation.LanguageFactory;
 import org.webseer.transformation.OutputWriters;
 import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.RuntimeTransformationException;
@@ -37,8 +36,9 @@ public class ViewTransformation extends SeerServlet {
 		
 		TransformationFactory factory = TransformationFactory.getTransformationFactory(getNeoService(), true);
 		
-		Transformation transformation = factory.getLatestTransformationByName(transformationName);
+		JavaTransformation transformation = (JavaTransformation) factory.getLatestTransformationByName(transformationName);
 		
+		System.out.println("Got transformation " + transformation + " from " + factory);
 		request.setAttribute("transformation", transformation);
 		request.setAttribute("source", transformation.getSource());
 
@@ -55,13 +55,14 @@ public class ViewTransformation extends SeerServlet {
 
 		TransformationFactory factory = TransformationFactory.getTransformationFactory(getNeoService(), true);
 
-		Transformation transformation = factory.getLatestTransformationByName(transformationName);
+		JavaTransformation transformation = (JavaTransformation) factory.getLatestTransformationByName(transformationName);
 
+		System.out.println("Got transformation " + transformation + " from " + factory);
 		Map<String, Object> inputs = new HashMap<String, Object>();
 		
 		PullRuntimeTransformation runtimeTransformation;
 		try {
-			runtimeTransformation = LanguageFactory.getInstance().generatePullTransformation(transformation);
+			runtimeTransformation = transformation.getPullRuntimeTransformation();
 
 			for (InputPoint input : transformation.getInputPoints()) {
 				String serialized = request.getParameter(input.getName());
@@ -88,6 +89,7 @@ public class ViewTransformation extends SeerServlet {
 		} catch (TransformationException e) {
 			throw new IllegalStateException("Input points in runtime transformation should match transformation", e);
 		} catch (RuntimeTransformationException e) {
+			//TODO: handle this in the output JSP
 			throw new ServletException("Problem running transformation", e);
 		}
 

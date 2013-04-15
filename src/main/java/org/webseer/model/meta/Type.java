@@ -25,8 +25,6 @@ import com.google.protobuf.ByteString;
 
 public class Type {
 
-	private static final String VERSION = "version";
-
 	public static BucketIO reader = new RandomAccessBucketIO();
 
 	private final static String NAME = "name";
@@ -42,9 +40,8 @@ public class Type {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public void addField(GraphDatabaseService service, Type type, String fieldName, boolean repeated) {
-		org.webseer.model.meta.Field newField = new org.webseer.model.meta.Field(service, type, fieldName, repeated);
-		Neo4JUtils.addToList(service, underlyingNode, newField.underlyingNode, NeoRelationshipType.TYPE_FIRST_FIELD,
+	public void addField(GraphDatabaseService service, org.webseer.model.meta.Field field) {
+		Neo4JUtils.addToList(service, underlyingNode, field.underlyingNode, NeoRelationshipType.TYPE_FIRST_FIELD,
 				NeoRelationshipType.TYPE_LAST_FIELD, NeoRelationshipType.TYPE_FIELD);
 	}
 
@@ -54,7 +51,7 @@ public class Type {
 
 					@Override
 					public org.webseer.model.meta.Field convertNode(Node node) {
-						return Neo4JUtils.getWrapped(node, org.webseer.model.meta.Field.class);
+						return Neo4JUtils.getInstance(node, org.webseer.model.meta.Field.class);
 					}
 
 				});
@@ -363,14 +360,6 @@ public class Type {
 			return false;
 		Type other = (Type) obj;
 		return underlyingNode.equals(other.underlyingNode);
-	}
-
-	public Long getVersion() {
-		return Neo4JUtils.getLong(underlyingNode, VERSION);
-	}
-
-	public void setVersion(long version) {
-		underlyingNode.setProperty(VERSION, version);
 	}
 
 	public Object getValue(HasValue item, String fieldName) {

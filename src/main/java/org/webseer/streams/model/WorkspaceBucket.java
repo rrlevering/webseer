@@ -81,7 +81,7 @@ public class WorkspaceBucket {
 
 					@Override
 					public ItemView convertNode(Node node) {
-						return Neo4JUtils.getWrapped(node, ItemView.class);
+						return Neo4JUtils.getInstance(node, ItemView.class);
 					}
 
 				});

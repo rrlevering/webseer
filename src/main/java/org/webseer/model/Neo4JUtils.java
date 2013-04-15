@@ -1,6 +1,5 @@
 package org.webseer.model;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 
 import name.levering.ryan.util.IterableUtils;
@@ -9,6 +8,9 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
 import org.webseer.streams.model.WorkspaceBucket;
 import org.webseer.streams.model.program.TransformationNodeInput;
 import org.webseer.streams.model.trace.DataItem;
@@ -44,6 +46,28 @@ public class Neo4JUtils {
 			return getString(node, "CLASS") + "[" + node.getId() + "]";
 		} else {
 			return node.toString();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public final static <T> T getInstance(Node node, Class<T> clazzType) {
+		if (node.hasProperty("CLASS")) {
+			return (T) getInstance(node);
+		} else {
+			try {
+				return clazzType.getConstructor(Node.class).newInstance(node);
+			} catch (Exception e) {
+				throw new IllegalStateException("Problem reflectively creating node of type " + clazzType, e);
+			}
+		}
+	}
+
+	public final static Object getInstance(Node node) {
+		String clazz = getString(node, "CLASS");
+		try {
+			return Class.forName(clazz).getConstructor(Node.class).newInstance(node);
+		} catch (Exception e) {
+			throw new IllegalStateException("Problem reflectively creating node of type " + clazz, e);
 		}
 	}
 
@@ -108,12 +132,12 @@ public class Neo4JUtils {
 		};
 	}
 
-	public static final <T> Iterable<T> getIterable(final Node underlyingNode, final NeoRelationshipType edge,
+	public static final <T> Iterable<T> getIterable(final Node underlyingNode, final RelationshipType edge,
 			final Class<T> clazz) {
 		return getIterable(underlyingNode, edge, Direction.BOTH, clazz);
 	}
 
-	public static final <T> Iterable<T> getIterable(final Node underlyingNode, final NeoRelationshipType edge,
+	public static final <T> Iterable<T> getIterable(final Node underlyingNode, final RelationshipType edge,
 			final Direction dir, final Class<T> clazz) {
 		return new Iterable<T>() {
 
@@ -128,22 +152,7 @@ public class Neo4JUtils {
 					}
 
 					public T next() {
-						try {
-							return clazz.getConstructor(Node.class).newInstance(
-									underlyingIterator.next().getOtherNode(underlyingNode));
-						} catch (IllegalArgumentException e) {
-							throw new RuntimeException("Internal constructors not created for node wrapping", e);
-						} catch (SecurityException e) {
-							throw new RuntimeException("Internal constructors not created for node wrapping", e);
-						} catch (InstantiationException e) {
-							throw new RuntimeException("Internal constructors not created for node wrapping", e);
-						} catch (IllegalAccessException e) {
-							throw new RuntimeException("Internal constructors not created for node wrapping", e);
-						} catch (InvocationTargetException e) {
-							throw new RuntimeException("Internal constructors not created for node wrapping", e);
-						} catch (NoSuchMethodException e) {
-							throw new RuntimeException("Internal constructors not created for node wrapping", e);
-						}
+						return getInstance(underlyingIterator.next().getOtherNode(underlyingNode), clazz);
 					}
 
 					public void remove() {
@@ -182,40 +191,23 @@ public class Neo4JUtils {
 		return rel.getOtherNode(underlyingNode);
 	}
 
-	public static <T> T getWrapped(Node underlyingNode, Class<T> clazz) {
-		try {
-			return clazz.getConstructor(Node.class).newInstance(underlyingNode);
-		} catch (IllegalArgumentException e) {
-			throw new RuntimeException("Internal constructors not created for node wrapping", e);
-		} catch (SecurityException e) {
-			throw new RuntimeException("Internal constructors not created for node wrapping", e);
-		} catch (InstantiationException e) {
-			throw new RuntimeException("Internal constructors not created for node wrapping", e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Internal constructors not created for node wrapping", e);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException("Internal constructors not created for node wrapping", e);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException("Internal constructors not created for node wrapping", e);
-		}
-	}
-
-	public static <T> T getLinked(Node underlyingNode, NeoRelationshipType edge, Class<T> clazz) {
+	public static <T> T getLinked(Node underlyingNode, RelationshipType edge, Class<T> clazz) {
 		Relationship rel = underlyingNode.getSingleRelationship(edge, Direction.BOTH);
 		if (rel == null) {
 			return null;
 		}
-		return getWrapped(rel.getOtherNode(underlyingNode), clazz);
+		return getInstance(rel.getOtherNode(underlyingNode), clazz);
 	}
 
-	public static <T> T getSingleton(GraphDatabaseService service, NeoRelationshipType edge, Class<T> clazz) {
-		Node ref = service.getReferenceNode();
-		Relationship rel = ref.getSingleRelationship(edge, Direction.OUTGOING);
-		if (rel == null) {
-			Node newSingleton = Neo4JUtils.createNode(service);
-			ref.createRelationshipTo(newSingleton, edge);
+	public static <T> T getSingleton(GraphDatabaseService service, Class<T> clazz) {
+		IndexManager ref = service.index();
+		Index<Node> singletonIndex = ref.forNodes(clazz.getName());
+		Node singleton = singletonIndex.get("singleton", "singleton").getSingle();
+		if (singleton == null) {
+			singleton = Neo4JUtils.createNode(service);
+			singletonIndex.add(singleton, "singleton", "singleton");
 		}
-		return getLinked(ref, edge, clazz);
+		return getInstance(singleton, clazz);
 	}
 
 	public static <T> T getOutgoing(Node underlyingNode, NeoRelationshipType edge, Class<T> clazz) {
@@ -223,7 +215,7 @@ public class Neo4JUtils {
 		if (rel == null) {
 			return null;
 		}
-		return getWrapped(rel.getOtherNode(underlyingNode), clazz);
+		return getInstance(rel.getOtherNode(underlyingNode), clazz);
 	}
 
 	public static Node getIncomingNode(Node underlyingNode, NeoRelationshipType edge) {
@@ -257,7 +249,7 @@ public class Neo4JUtils {
 
 	public static <T> T get(GraphDatabaseService service, long id, Class<T> clazz) {
 		try {
-			return getWrapped(service.getNodeById(id), clazz);
+			return getInstance(service.getNodeById(id), clazz);
 		} catch (Exception e) {
 			return null;
 		}
@@ -474,5 +466,31 @@ public class Neo4JUtils {
 
 	public static Node getNode(User owner) {
 		return owner.getUnderlyingNode();
+	}
+
+	public static <T> Iterable<T> getIterable(final Node underlyingNode, final Class<T> clazz) {
+		return new Iterable<T>() {
+
+			public Iterator<T> iterator() {
+				return new Iterator<T>() {
+
+					private Iterator<Relationship> underlyingIterator = underlyingNode.getRelationships(Direction.OUTGOING).iterator();
+
+					public boolean hasNext() {
+						return underlyingIterator.hasNext();
+					}
+
+					public T next() {
+						return getInstance(underlyingIterator.next().getOtherNode(underlyingNode), clazz);
+					}
+
+					public void remove() {
+						underlyingIterator.remove();
+					}
+
+				};
+			}
+
+		};
 	}
 }

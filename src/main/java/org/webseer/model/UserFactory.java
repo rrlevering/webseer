@@ -15,7 +15,7 @@ public class UserFactory {
 	}
 
 	public static UserFactory getUserFactory(GraphDatabaseService service) {
-		return Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_USERFACTORY, UserFactory.class);
+		return Neo4JUtils.getSingleton(service, UserFactory.class);
 	}
 
 	Node getUnderlyingNode() {
@@ -36,7 +36,7 @@ public class UserFactory {
 		if (userNode == null) {
 			return null;
 		}
-		return Neo4JUtils.getWrapped(userNode, User.class);
+		return Neo4JUtils.getInstance(userNode, User.class);
 	}
 
 	public User getUser(String userid, String password, GraphDatabaseService service) {

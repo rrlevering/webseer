@@ -63,6 +63,10 @@
     <servlet-class>org.webseer.web.ViewTransformation</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>edit-transformation</servlet-name>
+    <servlet-class>org.webseer.web.EditTransformation</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>edit-workspace</servlet-name>
     <servlet-class>org.webseer.web.EditWorkspace</servlet-class>
   </servlet>
@@ -113,6 +117,10 @@
   <servlet-mapping>
     <servlet-name>transformation</servlet-name>
     <url-pattern>/transformation</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>edit-transformation</servlet-name>
+    <url-pattern>/edit-transformation</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>render-node</servlet-name>

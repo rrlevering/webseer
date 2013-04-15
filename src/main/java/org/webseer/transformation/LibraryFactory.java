@@ -70,11 +70,8 @@ public class LibraryFactory {
 	public static LibraryFactory getLibraryFactory(GraphDatabaseService service, boolean bootstrap) {
 		if (!SINGLETON.containsKey(service)) {
 			LibraryFactory factory = Neo4JUtils.getSingleton(service,
-					NeoRelationshipType.REFERENCE_LIBRARY_FACTORY, LibraryFactory.class);
+					LibraryFactory.class);
 			SINGLETON.put(service, factory);
-			if (bootstrap) {
-				Bootstrapper.bootstrapBuiltins(service);
-			}
 			return factory;
 		}
 		return SINGLETON.get(service);
@@ -82,6 +79,11 @@ public class LibraryFactory {
 
 	Node getUnderlyingNode() {
 		return this.underlyingNode;
+	}
+
+	public Iterable<LibraryResource> getResourcesInPackage(String pkg) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -5,3 +5,5 @@ syntax: regexp
 .*/\.svn/.*
 syntax: regexp
 ^bucketData$
+syntax: regexp
+^target$

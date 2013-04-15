@@ -105,7 +105,7 @@ public class TransformationGraph {
 
 		try {
 
-			T clone = Neo4JUtils.getWrapped(recursiveCopy(service, startNode, Arrays.asList( //
+			T clone = Neo4JUtils.getInstance(recursiveCopy(service, startNode, Arrays.asList( //
 					// NeoRelationshipType.GRAPH_NODE, // Graph to all the transformation nodes
 					NeoRelationshipType.NODE_NODEINPUT, // Nodes to all their inputs
 					NeoRelationshipType.NODE_NODEOUTPUT, // Nodes to all their outputs

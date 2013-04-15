@@ -8,10 +8,17 @@ import org.webseer.java.FunctionDef;
 
 public class Stemmer {
 
+	/**
+	 * Stems words using a snowball stemmer: http://snowball.tartarus.org/.
+	 * 
+	 * @param words
+	 *            the words to stem
+	 * @return a stemmed list of words in the same order
+	 */
 	@FunctionDef
 	public Iterable<String> stem(Iterable<String> words) {
 		englishStemmer stemmer = new englishStemmer();
-		
+
 		List<String> stemmed = new ArrayList<String>();
 		for (String word : words) {
 			stemmer.setCurrent(word);
@@ -20,5 +27,5 @@ public class Stemmer {
 		}
 		return stemmed;
 	}
-	
+
 }

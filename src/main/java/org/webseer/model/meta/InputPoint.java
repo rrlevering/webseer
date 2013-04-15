@@ -3,6 +3,7 @@ package org.webseer.model.meta;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 
 /**
@@ -18,9 +19,13 @@ public class InputPoint extends TransformationField {
 
 	private static final String VARARGS = "VARARGS";
 
-	public InputPoint(GraphDatabaseService service, Transformation transformation, String name, Type type,
+	public InputPoint(GraphDatabaseService service, Transformation transformation, Field field) {
+		this(service, transformation, field, InputType.SERIAL, false, false);
+	}
+
+	public InputPoint(GraphDatabaseService service, Transformation transformation, Field field,
 			InputType inputType, boolean required, boolean varargs) {
-		super(service, null, new Field(service, type, name, false));
+		super(service, field);
 		this.underlyingNode.createRelationshipTo(transformation.getUnderlyingNode(),
 				NeoRelationshipType.TRANSFORMATION_INPUTPOINT);
 		this.underlyingNode.setProperty(INPUT_TYPE, inputType.toString());
@@ -45,8 +50,8 @@ public class InputPoint extends TransformationField {
 	}
 
 	public Transformation getTransformation() {
-		return new Transformation(underlyingNode.getSingleRelationship(NeoRelationshipType.TRANSFORMATION_INPUTPOINT,
-				Direction.INCOMING).getOtherNode(underlyingNode));
+		return Neo4JUtils.getInstance(underlyingNode.getSingleRelationship(NeoRelationshipType.TRANSFORMATION_INPUTPOINT,
+				Direction.INCOMING).getOtherNode(underlyingNode), Transformation.class);
 	}
 
 	public int hashCode() {

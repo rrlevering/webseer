@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TransactionFailureException;
+import org.webseer.java.JavaTransformation;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.meta.Field;
 import org.webseer.model.meta.InputPoint;
@@ -263,7 +264,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		JsonObject container = new JsonObject();
 		container.add("xtype", new JsonPrimitive("Webseer.WebseerContainer"));
 		container.add("typeId", new JsonPrimitive(transformation.getName()));
-		container.add("version", new JsonPrimitive(transformation.getSource().getVersion()));
+		container.add("version", new JsonPrimitive(transformation.getVersion()));
 		container.add("title", new JsonPrimitive(transformation.getSimpleName()));
 		container.add(
 				"height",
@@ -310,7 +311,7 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 		transformationObject.add("container", container);
 		container.add("xtype", new JsonPrimitive("Webseer.RendererContainer"));
 		container.add("typeId", new JsonPrimitive(transformation.getName()));
-		container.add("version", new JsonPrimitive(transformation.getSource().getVersion()));
+		container.add("version", new JsonPrimitive(transformation.getVersion()));
 		container.add("height", new JsonPrimitive(50 + 30 * IterableUtils.size(transformation.getInputPoints())));
 		JsonArray terminals = new JsonArray();
 		container.add("terminals", terminals);
@@ -559,7 +560,8 @@ public class ModifyWorkspaceGraph extends WorkspaceServlet {
 			// LOG
 			return new JsonObject();
 		}
-		return new JsonPrimitive(StringEscapeUtils.escapeHtml(node.getTransformation().getSource().getCode()));
+		return new JsonPrimitive(StringEscapeUtils.escapeHtml(((JavaTransformation) node.getTransformation())
+				.getSource().getCode()));
 	}
 
 	private JsonElement moveContainer(JsonElement params, Program mainProgram) {

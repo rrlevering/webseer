@@ -1,6 +1,7 @@
 package org.webseer;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
@@ -11,13 +12,13 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.webseer.java.JavaRuntimeFactory;
 import org.webseer.model.User;
 import org.webseer.model.UserFactory;
-import org.webseer.model.meta.InputPoint;
-import org.webseer.model.meta.InputType;
-import org.webseer.model.meta.OutputPoint;
-import org.webseer.model.meta.SourceFile;
+import org.webseer.model.meta.FileVersion;
+import org.webseer.model.meta.Library;
 import org.webseer.model.meta.Transformation;
+import org.webseer.model.meta.TransformationException;
 import org.webseer.streams.model.PreviewBuffer;
 import org.webseer.streams.model.Workspace;
 import org.webseer.streams.model.WorkspaceBucket;
@@ -34,7 +35,6 @@ import org.webseer.streams.model.runtime.RuntimeConfigurationImpl;
 import org.webseer.streams.model.trace.Item;
 import org.webseer.streams.model.trace.ItemView;
 import org.webseer.transformation.TransformationFactory;
-import org.webseer.type.TypeFactory;
 
 public class WebseerTests extends TestCase {
 
@@ -74,63 +74,6 @@ public class WebseerTests extends TestCase {
 	public void tearDown() throws Exception {
 		// Clean up the test domain directory
 		FileUtils.deleteDirectory(new File("testDomain"));
-	}
-
-	public void testAddTransformation() throws Exception {
-
-		EmbeddedGraphDatabase neo = setupEmptyDB();
-
-		// Setup
-		Transaction tran = neo.beginTx();
-		try {
-			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
-			TypeFactory typeFactory = TypeFactory.getTypeFactory(neo);
-
-			assertEmpty(factory.getAllTransformations());
-
-			Transformation transformation = new Transformation(neo, GENERATE_FUNCTION_NAME);
-
-			assertNull(transformation.getDescription());
-
-			SourceFile source = new SourceFile(neo, GENERATE_FUNCTION_NAME, GENERATE_FUNCTION, 1L);
-			source.addTransformation(transformation);
-			transformation.setDescription("Cool function");
-
-			assertEquals(GENERATE_FUNCTION, transformation.getSource().getCode());
-			assertEquals("Cool function", transformation.getDescription());
-
-			assertEmpty(transformation.getOutputPoints());
-			assertEmpty(transformation.getInputPoints());
-
-			new OutputPoint(neo, transformation, "generatedString", typeFactory.getType("string"));
-
-			factory.addTransformation(transformation);
-
-			tran.success();
-		} finally {
-			tran.finish();
-		}
-
-		// Test
-		tran = neo.beginTx();
-		try {
-			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
-
-			Transformation transformation = getSingle(factory.getAllTransformations());
-
-			assertEquals(GENERATE_FUNCTION_NAME, transformation.getName());
-			assertEquals(GENERATE_FUNCTION, transformation.getSource().getCode());
-			assertEquals("Cool function", transformation.getDescription());
-
-			OutputPoint connected = getSingle(transformation.getOutputPoints());
-			assertEquals("generatedString", connected.getName());
-
-			tran.success();
-		} finally {
-			tran.finish();
-			neo.shutdown();
-		}
-
 	}
 
 	public void testSimpleRun() throws Exception {
@@ -290,7 +233,7 @@ public class WebseerTests extends TestCase {
 			// Create this first so it's not in the count
 			WorkspaceBucket previewBucket = getPreviewBucket(neo);
 
-			count = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
+			count = neo.getNodeManager().getNumberOfIdsInUse(Node.class);
 
 			// Run the graph
 			RuntimeConfiguration config = getRuntime(neo);
@@ -310,10 +253,13 @@ public class WebseerTests extends TestCase {
 			tran.finish();
 		}
 
-		afterCount = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
-
-		assertEquals("Should not have extra references after all the items from the run are deleted", count, afterCount);
-		neo.shutdown();
+		try {
+			afterCount = neo.getNodeManager().getNumberOfIdsInUse(Node.class);
+			assertEquals("Should not have extra references after all the items from the run are deleted", count,
+					afterCount);
+		} finally {
+			neo.shutdown();
+		}
 	}
 
 	public void testTwoStepCastingFill() throws Exception {
@@ -601,7 +547,7 @@ public class WebseerTests extends TestCase {
 			output.addOutgoingEdge(neo, bucketNode.getInputs().iterator().next());
 
 			// Save the node count...after we do the fill and then delete, we should have no extra references
-			count = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
+			count = neo.getNodeManager().getNumberOfIdsInUse(Node.class);
 
 			// Run the graph
 			RuntimeConfiguration config = getRuntime(neo);
@@ -672,10 +618,13 @@ public class WebseerTests extends TestCase {
 			tran.finish();
 		}
 
-		afterCount = neo.getConfig().getGraphDbModule().getNodeManager().getNumberOfIdsInUse(Node.class);
-
-		assertEquals("Should not have extra references after all the items from the run are deleted", count, afterCount);
-		neo.shutdown();
+		try {
+			afterCount = neo.getNodeManager().getNumberOfIdsInUse(Node.class);
+			assertEquals("Should not have extra references after all the items from the run are deleted", count,
+					afterCount);
+		} finally {
+			neo.shutdown();
+		}
 	}
 
 	public void testMultipleOutputs() throws Exception {
@@ -789,7 +738,7 @@ public class WebseerTests extends TestCase {
 		return new RuntimeConfigurationImpl(service, workspace, "test");
 	}
 
-	static EmbeddedGraphDatabase setupTestDB() {
+	static EmbeddedGraphDatabase setupTestDB() throws TransformationException {
 		EmbeddedGraphDatabase neo = setupEmptyDB();
 
 		Transaction tran = neo.beginTx();
@@ -800,58 +749,46 @@ public class WebseerTests extends TestCase {
 			new Workspace(neo, workspaces, testUser, "test");
 
 			TransformationFactory factory = TransformationFactory.getTransformationFactory(neo);
-			TypeFactory typeFactory = TypeFactory.getTypeFactory(neo);
 
-			Transformation transformation = new Transformation(neo, GENERATE_FUNCTION_NAME);
-			SourceFile source = new SourceFile(neo, GENERATE_FUNCTION_NAME, GENERATE_FUNCTION, 1L);
-			source.addTransformation(transformation);
+			FileVersion source = new FileVersion(neo, GENERATE_FUNCTION);
+			Transformation transformation = JavaRuntimeFactory.getDefaultInstance().generateTransformation(
+					GENERATE_FUNCTION_NAME, source, Collections.<Library> emptyList());
 			transformation.setDescription("Cool function");
-			new OutputPoint(neo, transformation, "generatedString", typeFactory.getType("string"));
 
 			factory.addTransformation(transformation);
 
-			transformation = new Transformation(neo, TIME_FUNCTION_NAME);
-			source = new SourceFile(neo, TIME_FUNCTION_NAME, TIME_FUNCTION, 1L);
-			source.addTransformation(transformation);
+			source = new FileVersion(neo, TIME_FUNCTION);
+			transformation = JavaRuntimeFactory.getDefaultInstance().generateTransformation(TIME_FUNCTION_NAME, source,
+					Collections.<Library> emptyList());
 			transformation.setDescription("Outputs the current time");
-			new OutputPoint(neo, transformation, "currentTime", typeFactory.getType("int64"));
 
 			factory.addTransformation(transformation);
 
-			transformation = new Transformation(neo, CONVERT_FUNCTION_NAME);
-			source = new SourceFile(neo, CONVERT_FUNCTION_NAME, CONVERT_FUNCTION, 1L);
-			source.addTransformation(transformation);
+			source = new FileVersion(neo, CONVERT_FUNCTION);
+			transformation = JavaRuntimeFactory.getDefaultInstance().generateTransformation(CONVERT_FUNCTION_NAME,
+					source, Collections.<Library> emptyList());
 			transformation.setDescription("Cool function");
-			new OutputPoint(neo, transformation, "convertedString", typeFactory.getType("string"));
-			new InputPoint(neo, transformation, "toConvert", typeFactory.getType("string"), InputType.SERIAL, true,
-					false);
 
 			factory.addTransformation(transformation);
 
-			transformation = new Transformation(neo, GENERATE_MULTI_FUNCTION_NAME);
-			source = new SourceFile(neo, GENERATE_MULTI_FUNCTION_NAME, GENERATE_MULTI_FUNCTION, 1L);
-			source.addTransformation(transformation);
+			source = new FileVersion(neo, GENERATE_MULTI_FUNCTION);
+			transformation = JavaRuntimeFactory.getDefaultInstance().generateTransformation(
+					GENERATE_MULTI_FUNCTION_NAME, source, Collections.<Library> emptyList());
 			transformation.setDescription("Cool function");
-			new OutputPoint(neo, transformation, "generatedStrings", typeFactory.getType("string"));
 
 			factory.addTransformation(transformation);
 
-			transformation = new Transformation(neo, OUTPUTS_FUNCTION_NAME);
-			source = new SourceFile(neo, OUTPUTS_FUNCTION_NAME, OUTPUTS_FUNCTION, 1L);
-			source.addTransformation(transformation);
+			source = new FileVersion(neo, OUTPUTS_FUNCTION);
+			transformation = JavaRuntimeFactory.getDefaultInstance().generateTransformation(OUTPUTS_FUNCTION_NAME,
+					source, Collections.<Library> emptyList());
 			transformation.setDescription("Two outputs");
-			new OutputPoint(neo, transformation, "firstString", typeFactory.getType("string"));
-			new OutputPoint(neo, transformation, "secondString", typeFactory.getType("string"));
 
 			factory.addTransformation(transformation);
 
-			transformation = new Transformation(neo, COUNT_FUNCTION_NAME);
-			source = new SourceFile(neo, COUNT_FUNCTION_NAME, COUNT_FUNCTION, 1L);
-			source.addTransformation(transformation);
+			source = new FileVersion(neo, COUNT_FUNCTION);
+			transformation = JavaRuntimeFactory.getDefaultInstance().generateTransformation(COUNT_FUNCTION_NAME,
+					source, Collections.<Library> emptyList());
 			transformation.setDescription("Counts the number of items");
-			new InputPoint(neo, transformation, "toCount", typeFactory.getType("string"), InputType.AGGREGATE, true,
-					false);
-			new OutputPoint(neo, transformation, "count", typeFactory.getType("int32"));
 
 			factory.addTransformation(transformation);
 

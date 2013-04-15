@@ -1,8 +1,5 @@
 package org.webseer.classification;
 
-import org.webseer.java.Type;
-
-@Type
 public class FeatureRecord {
 
 	public String[] features;

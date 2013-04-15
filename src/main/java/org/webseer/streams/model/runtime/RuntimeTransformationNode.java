@@ -18,7 +18,6 @@ import org.webseer.streams.model.program.TransformationNode;
 import org.webseer.streams.model.program.TransformationNodeOutput;
 import org.webseer.streams.model.trace.Bucket;
 import org.webseer.streams.model.trace.TransformationGroup;
-import org.webseer.transformation.LanguageFactory;
 import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.TransformationListener;
 
@@ -66,9 +65,8 @@ public class RuntimeTransformationNode {
 	}
 
 	public PullRuntimeTransformation getPullTransformation(final RuntimeConfiguration config) throws TransformationException {
-		LanguageFactory factory = LanguageFactory.getInstance();
 		final Transformation transformation = getTransformationNode().getTransformation();
-		PullRuntimeTransformation runtimeTransformation = factory.generatePullTransformation(transformation);
+		PullRuntimeTransformation runtimeTransformation = transformation.getPullRuntimeTransformation();
 		runtimeTransformation.addListener(new TransformationListener() {
 
 			@Override

@@ -9,7 +9,7 @@ import org.webseer.java.OutputChannel;
 public class RemoveCharacters implements JavaFunction {
 
 	@InputChannel
-	public boolean works;
+	public int numCharacters = 0;
 
 	@InputChannel
 	public String originalString;
@@ -18,9 +18,9 @@ public class RemoveCharacters implements JavaFunction {
 	public String modifiedString;
 
 	public void execute() {
-		if (works) {
-			if (originalString.length() > 3) {
-				modifiedString = originalString.substring(0, originalString.length() - 3);
+		if (numCharacters > 0) {
+			if (originalString.length() > numChars) {
+				modifiedString = originalString.substring(0, originalString.length() - numChars);
 			} else {
 				modifiedString = "";
 			}

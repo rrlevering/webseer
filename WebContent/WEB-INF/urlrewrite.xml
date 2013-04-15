@@ -32,6 +32,11 @@
 		<set name="itemId">$1</set>
 	</rule>
 	<rule>
+		<from>/edit-transformation/([^\?]+)$</from>
+		<to>/edit-transformation</to>
+		<set name="transformationPath">$1</set>
+	</rule>
+	<rule>
 		<from>/transformation/([^\?]+)$</from>
 		<to>/transformation</to>
 		<set name="transformationPath">$1</set>

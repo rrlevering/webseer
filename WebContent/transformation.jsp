@@ -1,11 +1,14 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <jsp:include page="includes/big-header.jsp">
 	<jsp:param value="index-tabs" name="tabId" />
 </jsp:include>
 <link href="<c:url value="/lib/prettify/prettify.css" />" type="text/css" rel="stylesheet" />
 <script type="text/javascript" src="<c:url value="/lib/prettify/prettify.js" />" ></script>
-<div style="font-weight:bold;margin:10 0 10 0">${transformation.simpleName}<br /><span style="font-size:75%">${transformation.name} (v${source.version})</span></div>
+<jsp:useBean id="lastModified" class="java.util.Date" />
+<jsp:setProperty name="lastModified" property="time" value="${transformation.version}" />
+<div style="font-weight:bold;margin:10 0 10 0">${transformation.simpleName}<br /><span style="font-size:75%">${transformation.name} (<fmt:formatDate pattern="yyyy-MM-dd hh:mm" value="${lastModified}" />)</span></div>
 <div style="margin:10 0 10 0">${transformation.description }</div>
 <c:if test="${fn:length(transformation.keyWords) > 0 }">
 	<div style="margin:10 0 10 0">Keywords:
@@ -54,12 +57,32 @@
 	</c:forEach>
 </table>
 </c:if>
-<div>Language: ${transformation.language }</div>
-<div>Runtime: ${transformation.runtime }</div>
-<pre style="font-size:75%" class="prettyprint"><c:out value="${source.code }" /></pre>
-<script>
-prettyPrint();
-</script>
+<div>Type: ${transformation.type }</div>
+<script type="text/javascript" src="<c:url value="/lib/codemirror/lib/codemirror.js" />" ></script>
+<link rel="stylesheet" href="<c:url value="/lib/codemirror/lib/codemirror.css" />">
+<link rel="stylesheet" href="<c:url value="/lib/codemirror/theme/eclipse.css" />">
+<script type="text/javascript" src="<c:url value="/lib/codemirror/mode/clike/clike.js" />" ></script>
+<script src="<c:url value="/lib/codemirror/addon/edit/matchbrackets.js" />"></script>
+<script src="<c:url value="/lib/codemirror/addon/selection/active-line.js" />"></script>
+<script src="<c:url value="/lib/codemirror/addon/edit/closebrackets.js" />"></script>
+    <style>
+    .CodeMirror {border: 2px inset #dee; height:600px; width:800px;}
+    .CodeMirror-activeline-background {background: #e8f2ff !important;}
+    .CodeMirror-lines * { font-family: monospace !important; }
+    </style>
+	<textarea name="source" id="source">${source.code}</textarea>
+    <script>
+      var editor = CodeMirror.fromTextArea(document.getElementById("source"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        styleActiveLine: true,
+        mode: "text/x-java",
+        theme: "eclipse",
+        readOnly: true
+      });
+    </script>
+
 <form method="post">
 <table>
 <c:forEach var="inputPoint" items="${transformation.inputPoints.iterator()}" varStatus="loop">

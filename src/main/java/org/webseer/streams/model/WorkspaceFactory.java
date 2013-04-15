@@ -14,7 +14,7 @@ public class WorkspaceFactory {
 	}
 
 	public static WorkspaceFactory getWorkspaceFactory(GraphDatabaseService service) {
-		return Neo4JUtils.getSingleton(service, NeoRelationshipType.REFERENCE_WORKSPACEFACTORY, WorkspaceFactory.class);
+		return Neo4JUtils.getSingleton(service, WorkspaceFactory.class);
 	}
 
 	Node getUnderlyingNode() {

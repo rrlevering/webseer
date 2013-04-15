@@ -18,16 +18,13 @@ public class Library {
 
 	private final static String GROUP = "group";
 
-	private final static String DATA = "data";
-
 	private final Node underlyingNode;
 
-	public Library(GraphDatabaseService service, String group, String libraryName, String version, byte[] data) {
+	public Library(GraphDatabaseService service, String group, String libraryName, String version) {
 		this.underlyingNode = Neo4JUtils.createNode(service);
 		Neo4JUtils.setProperty(underlyingNode, NAME, libraryName);
 		Neo4JUtils.setProperty(underlyingNode, GROUP, group);
 		Neo4JUtils.setProperty(underlyingNode, VERSION, version);
-		Neo4JUtils.setProperty(underlyingNode, DATA, data);
 	}
 
 	public Library(Node underlyingNode) {
@@ -44,10 +41,6 @@ public class Library {
 
 	public String getVersion() {
 		return Neo4JUtils.getString(underlyingNode, VERSION);
-	}
-
-	public byte[] getData() {
-		return Neo4JUtils.getByteArray(underlyingNode, DATA);
 	}
 	
 	public Iterable<LibraryResource> getResources() {

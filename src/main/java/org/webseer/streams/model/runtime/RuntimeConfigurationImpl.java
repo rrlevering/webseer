@@ -14,7 +14,6 @@ import name.levering.ryan.util.Pair;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webseer.model.meta.TransformationException;
@@ -231,51 +230,45 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 			return completed.get(node);
 		}
 
-		Transaction tran = service.beginTx();
-		try {
-			// Generate a runtime node to track this
-			final RuntimeTransformationNode runtimeNode = new RuntimeTransformationNode(service, node);
+		// Generate a runtime node to track this
+		final RuntimeTransformationNode runtimeNode = new RuntimeTransformationNode(service, node);
 
-			if (node.asDisconnectedWorkspaceBucketNode() != null) {
-				Pair<RuntimeTransformationNode, PullRuntimeTransformation> result = new Pair<RuntimeTransformationNode, PullRuntimeTransformation>(
-						runtimeNode, null);
-				completed.put(node, result);
-				return result;
-			}
-
-			// Get the actual executor
-			final PullRuntimeTransformation pull = runtimeNode.getPullTransformation(this);
-
-			for (final Bucket bucket : runtimeNode.getBuckets()) {
-				addBucketWriter(pull, bucket);
-			}
-
-			// Add input channels that pull from input queue
-			// They pull on demand from the previous transformations
-			for (final TransformationNodeInput input : node.getInputs()) {
-				Iterable<TransformationEdge> sources = input.getIncomingEdges();
-				if (!sources.iterator().hasNext()) {
-					// Nothing to pull from, attempt to pull from config values
-					if (input.hasValue() || input.getMeta() != null) {
-						pull.addInputChannel(input.getInputField().getName(), new TransformationNodeInputReader(input,
-								runtimeNode));
-					} else {
-						pull.addInputChannel(input.getInputField().getName(), InputReaders.getEmptyReader());
-					}
-				} else {
-					final InputReader reader = getInputReader(input.getIncomingEdge(), runtimeNode);
-
-					pull.addInputChannel(input.getInputField().getName(), reader);
-				}
-			}
+		if (node.asDisconnectedWorkspaceBucketNode() != null) {
 			Pair<RuntimeTransformationNode, PullRuntimeTransformation> result = new Pair<RuntimeTransformationNode, PullRuntimeTransformation>(
-					runtimeNode, pull);
+					runtimeNode, null);
 			completed.put(node, result);
 			return result;
-
-		} finally {
-			tran.finish();
 		}
+
+		// Get the actual executor
+		final PullRuntimeTransformation pull = runtimeNode.getPullTransformation(this);
+
+		for (final Bucket bucket : runtimeNode.getBuckets()) {
+			addBucketWriter(pull, bucket);
+		}
+
+		// Add input channels that pull from input queue
+		// They pull on demand from the previous transformations
+		for (final TransformationNodeInput input : node.getInputs()) {
+			Iterable<TransformationEdge> sources = input.getIncomingEdges();
+			if (!sources.iterator().hasNext()) {
+				// Nothing to pull from, attempt to pull from config values
+				if (input.hasValue() || input.getMeta() != null) {
+					pull.addInputChannel(input.getInputField().getName(), new TransformationNodeInputReader(input,
+							runtimeNode));
+				} else {
+					pull.addInputChannel(input.getInputField().getName(), InputReaders.getEmptyReader());
+				}
+			} else {
+				final InputReader reader = getInputReader(input.getIncomingEdge(), runtimeNode);
+
+				pull.addInputChannel(input.getInputField().getName(), reader);
+			}
+		}
+		Pair<RuntimeTransformationNode, PullRuntimeTransformation> result = new Pair<RuntimeTransformationNode, PullRuntimeTransformation>(
+				runtimeNode, pull);
+		completed.put(node, result);
+		return result;
 	}
 
 	private Iterator<Item> getWeir(Item actualItem, TransformationNodeInput backReference) {

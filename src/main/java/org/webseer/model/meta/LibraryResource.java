@@ -40,5 +40,8 @@ public class LibraryResource {
 		return Neo4JUtils.getLinked(underlyingNode, NeoRelationshipType.LIBRARY_RESOURCE, Library.class);
 	}
 	
+	Node getUnderlyingNode() {
+		return underlyingNode;
+	}
 
 }

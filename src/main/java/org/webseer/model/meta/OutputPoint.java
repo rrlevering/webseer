@@ -3,6 +3,7 @@ package org.webseer.model.meta;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 
 /**
@@ -14,8 +15,8 @@ import org.webseer.model.NeoRelationshipType;
  */
 public class OutputPoint extends TransformationField {
 
-	public OutputPoint(GraphDatabaseService service, Transformation transformation, String name, Type type) {
-		super(service, null, new Field(service, type, name, false));
+	public OutputPoint(GraphDatabaseService service, Transformation transformation, Field field) {
+		super(service, field);
 		this.underlyingNode.createRelationshipTo(transformation.getUnderlyingNode(),
 				NeoRelationshipType.TRANSFORMATION_OUTPUTPOINT);
 	}
@@ -25,8 +26,8 @@ public class OutputPoint extends TransformationField {
 	}
 
 	public Transformation getTransformation() {
-		return new Transformation(underlyingNode.getSingleRelationship(NeoRelationshipType.TRANSFORMATION_OUTPUTPOINT,
-				Direction.INCOMING).getOtherNode(underlyingNode));
+		return Neo4JUtils.getInstance(underlyingNode.getSingleRelationship(NeoRelationshipType.TRANSFORMATION_OUTPUTPOINT,
+				Direction.INCOMING).getOtherNode(underlyingNode), Transformation.class);
 	}
 
 	public int hashCode() {

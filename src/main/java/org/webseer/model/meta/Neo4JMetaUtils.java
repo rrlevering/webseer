@@ -32,4 +32,11 @@ public class Neo4JMetaUtils {
 		return library.getUnderlyingNode();
 	}
 
+	public static Node getNode(FileVersion source) {
+		return source.getUnderlyingNode();
+	}
+
+	public static Node getNode(LibraryResource resource) {
+		return resource.getUnderlyingNode();
+	}
 }
