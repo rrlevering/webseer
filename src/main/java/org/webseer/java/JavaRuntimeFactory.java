@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -38,7 +39,6 @@ import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
@@ -321,19 +321,33 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 	}
 
 	/**
-	 * This is used just to add on to the general classloader for loading the in-memory classes from the DB.
+	 * This classloader is designed to load:
+	 * <ul>
+	 * <li>Classes defined in webseer
+	 * <li>Libraries added as dependencies
+	 * <li>Special webseer annotation classes
+	 * <li>Java system classes
+	 * </ul>
 	 */
 	static final class RAMClassLoader extends ClassLoader {
 		private final Map<String, JavaFileObject> output;
 
 		RAMClassLoader(Map<String, JavaFileObject> output) {
-			super(RAMClassLoader.class.getClassLoader());
+			super();
+
 			this.output = output;
 		}
 
 		@Override
-		protected URL findResource(String name) {
-			return super.findResource(name);
+		public Enumeration<URL> getResources(String name) throws IOException {
+			// Only allow the classloader to get system resources + special webseer annotations
+			if (name.equals(FunctionDef.class.getPackage().getName().replace(".", "/"))) {
+				Vector<URL> urls = new Vector<URL>();
+				urls.add(JavaRuntimeFactory.class.getClassLoader().getResource(
+						FunctionDef.class.getPackage().getName().replace(".", "/") + "/"));
+				return urls.elements();
+			}
+			return super.getResources(name);
 		}
 
 		@Override
@@ -341,6 +355,13 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 			try {
 				return findClass(name);
 			} catch (ClassNotFoundException e) {
+				if (name.equals(FunctionDef.class.getName())) {
+					return FunctionDef.class;
+				} else if (name.equals(InputChannel.class.getName())) {
+					return InputChannel.class;
+				} else if (name.equals(OutputChannel.class.getName())) {
+					return OutputChannel.class;
+				}
 				return super.loadClass(name); // Allow any class to be loaded
 			}
 		}
@@ -392,7 +413,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 			return compiledClasses;
 		}
 
-		public ClassLoader getClassLoader(JavaFileManager.Location location) {
+		public ClassLoader getClassLoader(Location location) {
 			return ldr;
 		}
 

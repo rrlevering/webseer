@@ -172,15 +172,15 @@ public class EditTransformation extends SeerServlet {
 				}
 				List<Diagnostic<? extends JavaFileObject>> diagnostics = ((CompilationFailedException) e.getCause())
 						.getDiagnostics();
-				StringBuilder errorMessage = new StringBuilder();
+				List<String> errorMessages = new ArrayList<String>();
 				for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics) {
 					long line = diagnostic.getLineNumber();
 					long col = diagnostic.getColumnNumber();
 					String message = diagnostic.getMessage(Locale.getDefault());
 
-					errorMessage.append(line + ":" + col + " - " + message).append("\n");
+					errorMessages.add(line + ":" + col + " - " + message);
 				}
-				request.setAttribute("errorMessage", errorMessage.toString());
+				request.setAttribute("errorMessages", errorMessages);
 			}
 		}
 

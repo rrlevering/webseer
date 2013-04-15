@@ -43,5 +43,7 @@
 
 	<input type="submit" value="Save" />
 </form>
+<c:forEach var="errorMessage" items="${errorMessages}" varStatus="loop">
 <div style="color:red">${errorMessage}</div>
+</c:forEach>
 <jsp:include page="includes/footer.jsp" />
