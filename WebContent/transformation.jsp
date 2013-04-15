@@ -86,7 +86,26 @@
 <form method="post">
 <table>
 <c:forEach var="inputPoint" items="${transformation.inputPoints.iterator()}" varStatus="loop">
-	<tr><td>${inputPoint.name}:</td><td><textarea name="${inputPoint.name}"></textarea></td></tr>
+	<tr>
+	    <td>${inputPoint.name}:</td>
+	    <td>
+	    <c:choose>
+	    <c:when test="${inputPoint.type.name == 'int32' || inputPoint.type.name == 'int64'
+	                  || inputPoint.type.name == 'double' || inputPoint.type.name == 'float'}">
+	    	<input name="${inputPoint.name}" />
+	    </c:when>
+	    <c:when test="${inputPoint.type.name == 'bool'}">
+	    	<select name="${inputPoint.name}">
+	    		<option>true</option>
+	    		<option selected>false</option>
+	    	</select>
+	    </c:when>
+	    <c:otherwise>
+		    <textarea name="${inputPoint.name}"></textarea>
+	    </c:otherwise>
+	    </c:choose>
+	    </td>
+	</tr>
 </c:forEach>
 <tr><td colspan="2"><input type="submit" name="Transform" /></td></tr>
 </table>
