@@ -7,7 +7,7 @@
 		<span style="position:absolute;right:0px;padding:5px">
 			<c:choose>
 				<c:when test="${user == null}"><a href="<c:url value="/login" />" />login</a></c:when>
-				<c:otherwise>Logged in as: <a href="<c:url value="/user" />">${user.name}</a> | <a href="<c:url value="/logout" />" />logout</a></c:otherwise>
+				<c:otherwise>Logged in as: ${user.name} | <a href="<c:url value="/logout" />" />logout</a></c:otherwise>
 			</c:choose>
 		</span>
 	</div>
