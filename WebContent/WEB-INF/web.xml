@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="webseer" version="2.5">
   <session-config>
-    <session-timeout>60</session-timeout>
+    <session-timeout>120</session-timeout>
   </session-config>
   <display-name>webseer-old</display-name>
   <welcome-file-list>
@@ -27,6 +27,8 @@
   <filter-mapping>
     <filter-name>LoggedInFilter</filter-name>
     <url-pattern>/workspace/*</url-pattern>
+    <url-pattern>/transformations</url-pattern>
+    <url-pattern>/transformation/*</url-pattern>
   </filter-mapping>
   <filter-mapping>
     <filter-name>UrlRewriteFilter</filter-name>
@@ -45,6 +47,10 @@
   <servlet>
     <servlet-name>index</servlet-name>
     <servlet-class>org.webseer.web.IndexServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>googleSignin</servlet-name>
+    <servlet-class>org.webseer.web.GoogleSigninServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>user</servlet-name>
@@ -133,6 +139,10 @@
   <servlet-mapping>
     <servlet-name>create-workspace</servlet-name>
     <url-pattern>/createWorkspace</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>googleSignin</servlet-name>
+    <url-pattern>/googleSignin</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>delete-workspace</servlet-name>

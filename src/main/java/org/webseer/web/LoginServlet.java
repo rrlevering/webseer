@@ -2,49 +2,31 @@ package org.webseer.web;
 
 import java.io.IOException;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.webseer.model.User;
-import org.webseer.model.UserFactory;
-import org.webseer.web.beans.UserBean;
-
-public class LoginServlet extends SeerServlet {
+public class LoginServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	private static final String CLIENT_ID = "651154329698.apps.googleusercontent.com";
+
 	@Override
-	public void transactionalizedService(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		if (request.getParameter("userid") != null) {
-			String userid = request.getParameter("userid");
-			String password = request.getParameter("password");
-			GraphDatabaseService service = getNeoService();
-
-			UserFactory factory = UserFactory.getUserFactory(service);
-			User user = factory.getUser(userid, UserServlet.encode(password), service);
-
-			if (user != null) {
-				request.getSession().setAttribute("user",
-						new UserBean(user.getLogin(), user.getEmail(), user.getName()));
-				if (request.getParameter("redirect") != null) {
-					response.sendRedirect(request.getParameter("redirect"));
-				} else {
-					response.sendRedirect("index");
-				}
-				return;
-			} else {
-				// Wrong authentication
-				request.setAttribute("error", "Invalid username/password");
-			}
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String state;
+		if (request.getParameter("redirect") != null) {
+			state = request.getParameter("redirect");
+		} else {
+			state = "index";
 		}
 
-		// Do nothing
-		RequestDispatcher rd = request.getRequestDispatcher("login.jsp");
-		rd.forward(request, response);
-
+		response.sendRedirect("https://accounts.google.com/o/oauth2/auth?response_type=code&client_id="
+				+ CLIENT_ID
+				+ "&state="
+				+ state
+				+ "&scope=https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile"
+				+ "&redirect_uri=https://localhost:8443" + this.getServletContext().getContextPath() + "/googleSignin");
 	}
 }
