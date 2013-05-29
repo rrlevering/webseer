@@ -1,6 +1,8 @@
 package org.webseer.transformation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.neo4j.graphdb.Direction;
@@ -8,6 +10,9 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.IndexManager;
 import org.webseer.model.Neo4JUtils;
 import org.webseer.model.NeoRelationshipType;
 import org.webseer.model.meta.Neo4JMetaUtils;
@@ -24,16 +29,46 @@ public class TransformationFactory {
 		this.underlyingNode = underlyingNode;
 	}
 
-	public void addTransformation(Transformation type) {
-		DynamicRelationshipType edge = DynamicRelationshipType.withName(type.getName());
+	public void addTransformation(Transformation transformation) {
+		addTransformation(null, transformation);
+	}
+
+	public void addTransformation(String user, Transformation transformation) {
+		DynamicRelationshipType edge = DynamicRelationshipType.withName(transformation.getName());
 		Transformation currentTransformation = Neo4JUtils.getLinked(underlyingNode, edge, Transformation.class);
 		if (currentTransformation != null) {
+			String currentOwner = currentTransformation.getOwner();
+			if (currentOwner != null && !currentOwner.equals(user)) {
+				// Disallowed
+				return;
+			}
 			Relationship rel = underlyingNode.getSingleRelationship(edge, Direction.OUTGOING);
 			rel.delete();
-			Neo4JMetaUtils.getNode(type).createRelationshipTo(Neo4JMetaUtils.getNode(currentTransformation),
+			Neo4JMetaUtils.getNode(transformation).createRelationshipTo(Neo4JMetaUtils.getNode(currentTransformation),
 					NeoRelationshipType.TRANSFORMATION_LAST_VERSION);
 		}
-		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(type), edge);
+		transformation.setOwner(user);
+		registerTransformation(transformation);
+		this.underlyingNode.createRelationshipTo(Neo4JMetaUtils.getNode(transformation), edge);
+	}
+
+	void registerTransformation(Transformation transformation) {
+		GraphDatabaseService service = underlyingNode.getGraphDatabase();
+		IndexManager indexManager = service.index();
+		Index<Node> index = indexManager.forNodes("transformations");
+		index.add(Neo4JMetaUtils.getNode(transformation), "name", transformation.getName());
+	}
+	
+	public List<Transformation> searchTransformations(String name) {
+		GraphDatabaseService service = underlyingNode.getGraphDatabase();
+		IndexManager indexManager = service.index();
+		Index<Node> index = indexManager.forNodes("transformations");
+		IndexHits<Node> hits = index.query("name", name);
+		List<Transformation> results = new ArrayList<>();
+		for (Node hit : hits) {
+			results.add(Neo4JUtils.getInstance(hit, Transformation.class));
+		}
+		return results;
 	}
 
 	public void removeTransformation(Transformation type) {

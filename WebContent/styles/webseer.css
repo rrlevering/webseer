@@ -38,6 +38,7 @@ table.wsTable {
 	margin: 1em 1em 1em 0em;
 	background: #FAFAD2;
 	border-collapse: collapse;
+	border-spacing: 0;
 }
 
 table.wsTable tr.alternate td {

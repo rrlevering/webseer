@@ -19,6 +19,8 @@ public abstract class Transformation {
 
 	private static final String DESCRIPTION = "description";
 
+	private static final String OWNER = "owner";
+
 	private static final String KEYWORDS = "keywords";
 
 	private static final String VERSION = "version";
@@ -63,6 +65,14 @@ public abstract class Transformation {
 	public String[] getKeyWords() {
 		return Neo4JUtils.getStringArray(underlyingNode, KEYWORDS);
 	}
+	
+	public String getOwner() {
+		return Neo4JUtils.getString(underlyingNode, OWNER);
+	}
+
+	public void setOwner(String owner) {
+		underlyingNode.setProperty(OWNER, owner);
+	}
 
 	public void setDescription(String description) {
 		underlyingNode.setProperty(DESCRIPTION, description);
@@ -96,6 +106,9 @@ public abstract class Transformation {
 
 	public String getPackage() {
 		String fullName = getName();
+		if (fullName.indexOf('.') < 0) {
+			return "";
+		}
 		return fullName.substring(0, fullName.lastIndexOf('.'));
 	}
 

@@ -37,6 +37,11 @@
 		<set name="transformationPath">$1</set>
 	</rule>
 	<rule>
+		<from>/compile-transformation/([^\?]+)$</from>
+		<to>/compile-transformation</to>
+		<set name="transformationPath">$1</set>
+	</rule>
+	<rule>
 		<from>/transformation/([^\?]+)$</from>
 		<to>/transformation</to>
 		<set name="transformationPath">$1</set>

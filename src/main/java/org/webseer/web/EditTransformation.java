@@ -23,6 +23,7 @@ import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
 import org.webseer.repository.Repository;
 import org.webseer.transformation.TransformationFactory;
+import org.webseer.web.beans.UserBean;
 
 public class EditTransformation extends SeerServlet {
 
@@ -104,6 +105,12 @@ public class EditTransformation extends SeerServlet {
 		String transformationPath = (String) getRequiredAttribute(request, "transformationPath");
 		String transformationName = transformationPath.replace('/', '.');
 
+		String action = (String) getRequiredParameter(request, "action");
+		if (action.equals("Cancel")) {
+			response.sendRedirect(request.getContextPath() + "/transformation/" + transformationPath);
+			return;
+		}
+		
 		String source = request.getParameter("source");
 
 		request.setAttribute("name", transformationName);
@@ -165,7 +172,8 @@ public class EditTransformation extends SeerServlet {
 				if (newDependency != null) {
 					dependencies.add(newDependency);
 				}
-				factory.addTransformation(transformation);
+				UserBean currentUser = (UserBean) request.getSession().getAttribute("user");
+				factory.addTransformation(currentUser.getLogin(), transformation);
 			} catch (TransformationException e) {
 				if (!(e.getCause() instanceof CompilationFailedException)) {
 					throw new ServletException(e);
@@ -173,18 +181,49 @@ public class EditTransformation extends SeerServlet {
 				List<Diagnostic<? extends JavaFileObject>> diagnostics = ((CompilationFailedException) e.getCause())
 						.getDiagnostics();
 				List<String> errorMessages = new ArrayList<String>();
+				List<ErrorBean> errors = new ArrayList<ErrorBean>();
 				for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics) {
 					long line = diagnostic.getLineNumber();
 					long col = diagnostic.getColumnNumber();
 					String message = diagnostic.getMessage(Locale.getDefault());
+					errors.add(new ErrorBean(line, col, message));
 
 					errorMessages.add(line + ":" + col + " - " + message);
 				}
 				request.setAttribute("errorMessages", errorMessages);
+				request.setAttribute("errors", errors);
 			}
 		}
 
-		RequestDispatcher rd = request.getRequestDispatcher("edit-transformation.jsp");
-		rd.forward(request, response);
+		if (action.equals("Save and Close")) {
+			response.sendRedirect(request.getContextPath() + "/transformation/" + transformationPath);
+		} else {
+			RequestDispatcher rd = request.getRequestDispatcher("edit-transformation.jsp");
+			rd.forward(request, response);
+		}
+	}
+	
+	public static class ErrorBean {
+		private long line;
+		private long col;
+		private String message;
+
+		public ErrorBean(long line, long col, String message) {
+			this.line = line;
+			this.col = col;
+			this.message = message;
+		}
+
+		public long getLine() {
+			return line;
+		}
+
+		public long getCol() {
+			return col;
+		}
+
+		public String getMessage() {
+			return message;
+		}
 	}
 }

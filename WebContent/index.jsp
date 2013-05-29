@@ -4,66 +4,44 @@
 	<jsp:param value="index-tabs" name="tabId" />
 </jsp:include>
 <br />
-<!---
-<form id="frontHook">
-<input type="text" size="100" value="http://www.google.com" /><input class="wsSubmit" type="submit" value="Classify" />
-</form>
---->
 <c:if test="${user != null }">
-<script language="JavaScript">
-	function newWorkspace() {
+<script type="text/javascript">
+	function newTransformation() {
 		var createDiv = $("#createDiv");
-		createDiv.html('<input type="text" id="workspaceName" name="workspaceName" value="New Workspace" /><input type="button" onclick="validateWorkspace()" value="Create Workspace" />');
+		createDiv.html('<input type="text" id="transformationName" name="transformationName" value="${newTransformationName}" /><input type="button" onclick="validateTransformation()" value="Create Transformation" />');
 	}
 
-	function validateWorkspace() {
-		$.ajax({
-			url: "createWorkspace?workspaceName=" + $("#workspaceName").val(),
-			dataType: "json",
-			success: function(newWorkspace) {
-				window.location.href = "workspace/" + newWorkspace.id + "/edit"; 
-			}
-		});
+	function validateTransformation() {
+		var name = $("#transformationName").val().replace('.', '/');
+		window.location.href = '<c:url value="edit-transformation/" />' + name;
 	}
 </script>
 <div class="frontDiv">
-	<div class="title">Your Workspaces</div>
-	<table class="wsTable" cellpadding="0" cellspacing="0">
+	<div class="title">Your Transformations</div>
+	<table class="wsTable">
 		<tr>
-			<th width="400">workspace</th>
-			<th width="200">programs</th>
-			<th width="200">buckets</th>
+			<th width="400">transformation</th>
 		</tr>
-		<c:forEach var="workspace" items="${ownedWorkspaces}" varStatus="loop">
+		<c:forEach var="transformation" items="${ownedTransformations}" varStatus="loop">
 			<tr${((loop.index % 2) == 0) ? '' : ' class="alternate"'}>
-			<td><a href="workspace/${workspace.id}/edit">${workspace.name}</a></td>
-			<td>${workspace.programCount}</td>
-			<td>${workspace.bucketCount}</td>
+			<td><a href="transformation/${fn:replace(transformation.uri, '.', '/')}">${transformation.uri}</a></td>
 			</tr>
 		</c:forEach>
-		<tr><td colspan="4"><div id="createDiv"><a class="action" href="javascript:newWorkspace()"><img height="20" width="20" border="0" style="vertical-align:middle" src="images/new.png" />Create a new workspace</a></div></td></tr>
+		<tr><td colspan="4"><div id="createDiv"><a class="action" href="javascript:newTransformation()"><img height="20" width="20" border="0" style="vertical-align:middle" src="images/new.png" />Create a new transformation</a></div></td></tr>
 	</table>
 </div>
 </c:if>
-<c:if test="${fn:length(publicWorkspaces) > 0 }">
 <div class="frontDiv">
-	<div class="title">Public Workspaces</div>
-	<table class="wsTable" cellpadding="0" cellspacing="0">
+	<div class="title">Public Transformations</div>
+	<table class="wsTable">
 		<tr>
-			<th width="400">workspace</th>
-			<th width="200">owner</th>
-			<th width="200">programs</th>
-			<th width="200">buckets</th>
+			<th width="400">transformation</th>
 		</tr>
-		<c:forEach var="workspace" items="${publicWorkspaces}" varStatus="loop">
+		<c:forEach var="transformation" items="${publicTransformations}" varStatus="loop">
 			<tr${((loop.index % 2) == 0) ? '' : ' class="alternate"'}>
-			<td><a href="workspace/${workspace.id}/view">${workspace.name}</a></td>
-			<td>${workspace.ownerName}</td>
-			<td>${workspace.programCount}</td>
-			<td>${workspace.bucketCount}</td>
+			<td><a href="transformation/${fn:replace(transformation.uri, '.', '/')}">${transformation.uri}</a></td>
 			</tr>
 		</c:forEach>
 	</table>
 </div>
-</c:if>
 <jsp:include page="includes/footer.jsp" />

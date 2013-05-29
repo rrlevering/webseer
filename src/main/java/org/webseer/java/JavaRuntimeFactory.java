@@ -178,10 +178,15 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 			throw new CompilationFailedException(diagnostics.getDiagnostics());
 		}
 
-		String compiledClass = jfm.getCompiledClasses().get(0);
+		List<String> compiledClasses = jfm.getCompiledClasses();
+		if (compiledClasses.isEmpty()) {
+			throw new CompilationFailedException(diagnostics.getDiagnostics());
+		}
+		
+		String firstClass = compiledClasses.get(0);
 
 		try {
-			return loader.loadClass(compiledClass);
+			return loader.loadClass(firstClass);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException("Improper code for getting runtime class", e);
 		}
@@ -541,6 +546,10 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 	@Override
 	public Transformation generateTransformation(String qualifiedName, FileVersion wrapperSource,
 			Iterable<Library> dependencies) throws TransformationException {
+		if (qualifiedName == null || qualifiedName.isEmpty()) {
+			throw new TransformationException("No transformation name specified");
+		}
+		
 		GraphDatabaseService service = Neo4JMetaUtils.getNode(wrapperSource).getGraphDatabase();
 
 		String code = wrapperSource.getCode();
@@ -551,9 +560,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 		} catch (CompilationFailedException e) {
 			throw new TransformationException(e);
 		}
-		// if (!JavaFunction.class.isAssignableFrom(clazz)) {
-		// return null;
-		// }
+		
 		Transformation trans = new JavaTransformation(service, qualifiedName, wrapperSource);
 		for (Library library : dependencies) {
 			Neo4JMetaUtils.getNode(trans).createRelationshipTo(Neo4JMetaUtils.getNode(library),

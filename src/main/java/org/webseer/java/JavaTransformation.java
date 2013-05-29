@@ -1,5 +1,7 @@
 package org.webseer.java;
 
+import java.lang.reflect.Method;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.webseer.java.JavaRuntimeFactory.CompilationFailedException;
@@ -46,8 +48,9 @@ public class JavaTransformation extends Transformation {
 		String code = getSource().getCode();
 
 		Object object;
+		Class<?> clazz;
 		try {
-			Class<?> clazz = JavaRuntimeFactory.getDefaultInstance().getClass(className, code, getLibraries());
+			clazz = JavaRuntimeFactory.getDefaultInstance().getClass(className, code, getLibraries());
 			object = clazz.newInstance();
 		} catch (InstantiationException e) {
 			throw new TransformationException("Unable to instantiate user code", e);
@@ -56,10 +59,17 @@ public class JavaTransformation extends Transformation {
 		} catch (CompilationFailedException e) {
 			throw new TransformationException("Transformation is not compilable, how did it get created?", e);
 		}
-
+		
+		for (Method m : clazz.getMethods()) {
+			if (m.getName().equals("execute")) {
+				if (m.getParameterTypes().length == 0 && m.getReturnType() == Void.TYPE) {
+					return new ClassTransformation(object);
+				}
+			}
+		}
+		
 		// Load and wrap the object with a java transformation wrapper
-		return new ClassTransformation(object);
-
+		throw new TransformationException("No execute method found");
 	}
 
 	@Override

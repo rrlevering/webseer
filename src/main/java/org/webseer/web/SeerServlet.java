@@ -55,7 +55,7 @@ public abstract class SeerServlet extends HttpServlet {
 	protected Object getRequiredAttribute(HttpServletRequest req, String parameterName) throws ServletException {
 		Object parameter = req.getAttribute(parameterName);
 		if (parameter == null) {
-			throw new ServletException("Expected parameter '" + parameterName + "'");
+			throw new ServletException("Expected attribute '" + parameterName + "'");
 		}
 		return parameter;
 	}

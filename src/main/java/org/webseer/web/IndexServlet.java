@@ -10,10 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.webseer.streams.model.Workspace;
-import org.webseer.streams.model.WorkspaceFactory;
+import org.webseer.model.meta.Transformation;
+import org.webseer.transformation.TransformationFactory;
+import org.webseer.web.beans.TransformationBean;
 import org.webseer.web.beans.UserBean;
-import org.webseer.web.beans.WorkspaceBean;
 
 public class IndexServlet extends SeerServlet {
 
@@ -23,23 +23,41 @@ public class IndexServlet extends SeerServlet {
 	public void transactionalizedService(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		GraphDatabaseService service = getNeoService();
-		WorkspaceFactory factory = WorkspaceFactory.getWorkspaceFactory(service);
+		TransformationFactory factory = TransformationFactory.getTransformationFactory(service);
 
 		UserBean currentUser = (UserBean) request.getSession().getAttribute("user");
-		Iterable<Workspace> workspaces = factory.getAllWorkspaces();
-		List<WorkspaceBean> publicWorkspaces = new ArrayList<WorkspaceBean>();
-		List<WorkspaceBean> ownedWorkspaces = new ArrayList<WorkspaceBean>();
-		for (Workspace workspace : workspaces) {
-			if (currentUser != null && workspace.getOwner().getLogin().equals(currentUser.getLogin())) {
-				ownedWorkspaces.add(new WorkspaceBean(workspace));
-			} else if (workspace.isPublic()) {
-				publicWorkspaces.add(new WorkspaceBean(workspace));
+		Iterable<Transformation> transformations = factory.getAllTransformations();
+		List<TransformationBean> publicTransformations = new ArrayList<TransformationBean>();
+		List<TransformationBean> ownedTransformations = new ArrayList<TransformationBean>();
+		
+		for (Transformation transformation : transformations) {
+			if (currentUser != null && currentUser.getLogin().equals(transformation.getOwner())) {
+				ownedTransformations.add(new TransformationBean(transformation));
+			} else if (transformation.getOwner() == null) {
+				publicTransformations.add(new TransformationBean(transformation));
 			}
 		}
-		request.setAttribute("ownedWorkspaces", ownedWorkspaces);
-		request.setAttribute("publicWorkspaces", publicWorkspaces);
+		request.setAttribute("ownedTransformations", ownedTransformations);
+		request.setAttribute("publicTransformations", publicTransformations);
 
+		String newTransformationName;
+		if (currentUser != null) {
+			newTransformationName = sanitize(currentUser.getEmail()) + "Test";
+		} else {
+			newTransformationName = "test";
+		}
+		int i = 1;
+		String testName = newTransformationName;
+		while (factory.getLatestTransformationByName(testName) != null) {
+			testName = newTransformationName + i++;
+		}
+		request.setAttribute("newTransformationName", testName);
+		
 		RequestDispatcher rd = request.getRequestDispatcher("index.jsp");
 		rd.forward(request, response);
+	}
+	
+	private String sanitize(String email) {
+		return email.substring(0, email.indexOf("@")).replaceAll("\\.", "_");
 	}
 }

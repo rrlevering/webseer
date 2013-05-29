@@ -20,6 +20,7 @@ import org.webseer.transformation.OutputWriters;
 import org.webseer.transformation.PullRuntimeTransformation;
 import org.webseer.transformation.RuntimeTransformationException;
 import org.webseer.transformation.TransformationFactory;
+import org.webseer.web.beans.UserBean;
 
 public class ViewTransformation extends SeerServlet {
 
@@ -42,6 +43,9 @@ public class ViewTransformation extends SeerServlet {
 		request.setAttribute("transformation", transformation);
 		request.setAttribute("source", transformation.getSource());
 
+		UserBean currentUser = (UserBean) request.getSession().getAttribute("user");
+		request.setAttribute("editable", (currentUser != null && currentUser.getLogin().equals(transformation.getOwner())));
+		
 		RequestDispatcher rd = request.getRequestDispatcher("transformation.jsp");
 		rd.forward(request, response);
 	}

@@ -29,6 +29,8 @@
     <url-pattern>/workspace/*</url-pattern>
     <url-pattern>/transformations</url-pattern>
     <url-pattern>/transformation/*</url-pattern>
+    <url-pattern>/edit-transformation/*</url-pattern>
+    <url-pattern>/compile-transformation/*</url-pattern>
   </filter-mapping>
   <filter-mapping>
     <filter-name>UrlRewriteFilter</filter-name>
@@ -85,6 +87,10 @@
     <servlet-class>org.webseer.web.ajax.ModifyWorkspaceGraph</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>compile-transformation</servlet-name>
+    <servlet-class>org.webseer.web.ajax.CompileTransformation</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>render-node</servlet-name>
     <servlet-class>org.webseer.web.RenderNode</servlet-class>
   </servlet>
@@ -107,6 +113,10 @@
   <servlet-mapping>
     <servlet-name>modify-workspace-graph</servlet-name>
     <url-pattern>/modify-workspace</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>compile-transformation</servlet-name>
+    <url-pattern>/compile-transformation</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>transformations</servlet-name>
