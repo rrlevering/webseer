@@ -33,9 +33,11 @@ public class CompileTransformation extends SeerServlet {
 	@Override
 	protected void transactionalizedService(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
 			IOException {
-		String name = getRequiredParameter(req, "name");
 		String source = getRequiredParameter(req, "source");
 		
+		String transformationPath = (String) getRequiredAttribute(req, "transformationPath");
+		String name = transformationPath.replace('/', '.');
+
 		TransformationFactory factory = TransformationFactory.getTransformationFactory(getNeoService(), true);
 		Transformation transformation = factory.getLatestTransformationByName(name);
 		

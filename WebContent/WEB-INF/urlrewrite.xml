@@ -42,6 +42,16 @@
 		<set name="transformationPath">$1</set>
 	</rule>
 	<rule>
+		<from>/add-dependency/([^\?]+)$</from>
+		<to>/add-dependency</to>
+		<set name="transformationPath">$1</set>
+	</rule>
+	<rule>
+		<from>/remove-dependency/([^\?]+)$</from>
+		<to>/remove-dependency</to>
+		<set name="transformationPath">$1</set>
+	</rule>
+	<rule>
 		<from>/transformation/([^\?]+)$</from>
 		<to>/transformation</to>
 		<set name="transformationPath">$1</set>

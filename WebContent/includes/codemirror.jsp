@@ -26,16 +26,18 @@
 	      editor.removeLineWidget(widgets[i]);
 	    widgets.length = 0;
 
-	    for (var i = 0; i < errors.length; ++i) {
-	      var err = errors[i];
-	      if (!err) continue;
-	      var msg = document.createElement("div");
-	      var icon = msg.appendChild(document.createElement("span"));
-	      icon.innerHTML = "!!";
-	      icon.className = "lint-error-icon";
-	      msg.appendChild(document.createTextNode(err.reason));
-	      msg.className = "lint-error";
-	      widgets.push(editor.addLineWidget(err.line - 1, msg, {coverGutter: false, noHScroll: true}));
+	    if (errors) {
+		    for (var i = 0; i < errors.length; ++i) {
+		      var err = errors[i];
+		      if (!err) continue;
+		      var msg = document.createElement("div");
+		      var icon = msg.appendChild(document.createElement("span"));
+		      icon.innerHTML = "!!";
+		      icon.className = "lint-error-icon";
+		      msg.appendChild(document.createTextNode(err.reason));
+		      msg.className = "lint-error";
+		      widgets.push(editor.addLineWidget(err.line - 1, msg, {coverGutter: false, noHScroll: true}));
+		    }
 	    }
 	  });
 	  

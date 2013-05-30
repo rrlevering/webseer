@@ -91,6 +91,18 @@
     <servlet-class>org.webseer.web.ajax.CompileTransformation</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>add-dependency</servlet-name>
+    <servlet-class>org.webseer.web.ajax.AddDependency</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>remove-dependency</servlet-name>
+    <servlet-class>org.webseer.web.ajax.RemoveDependency</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>search-dependencies</servlet-name>
+    <servlet-class>org.webseer.web.ajax.SearchDependencies</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>render-node</servlet-name>
     <servlet-class>org.webseer.web.RenderNode</servlet-class>
   </servlet>
@@ -117,6 +129,14 @@
   <servlet-mapping>
     <servlet-name>compile-transformation</servlet-name>
     <url-pattern>/compile-transformation</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>add-dependency</servlet-name>
+    <url-pattern>/add-dependency</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>remove-dependency</servlet-name>
+    <url-pattern>/remove-dependency</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>transformations</servlet-name>
@@ -153,6 +173,10 @@
   <servlet-mapping>
     <servlet-name>edit-workspace</servlet-name>
     <url-pattern>/edit-workspace</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>search-dependencies</servlet-name>
+    <url-pattern>/search-dependencies</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>index</servlet-name>

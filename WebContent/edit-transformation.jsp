@@ -8,19 +8,81 @@
 <jsp:useBean id="lastModified" class="java.util.Date" />
 <jsp:setProperty name="lastModified" property="time" value="${version}" />
 <form method="post">
-<div>Dependencies:</div>
-<c:forEach var="dependency" items="${dependencies}" varStatus="loop">
-	<div>${dependency.group}:${dependency.name }:${dependency.version} <input type="button" value="delete" /></div>
-</c:forEach>
-<input type="text" style="width:200px" name="newDependency" />
+<div id="dependencies">Dependencies:
+	<c:forEach var="dependency" items="${dependencies}" varStatus="loop">
+		<div id="${dependency.safeId}">${dependency.id} <input type="button" value="delete" onclick="removeDependency('${dependency.id}', '${dependency.safeId}')" /></div>
+	</c:forEach>
+</div>
+<style>
+  .ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+   }
+</style>
+<input id="dependency" type="text" style="width:300px" name="newDependency" />
+<script>
+$(function() {
+	var dependency = $('#dependency');
+	
+	dependency.autocomplete({
+		minLength: 2,
+		delay: 500,
+		source: function(request, response) {
+			 $.ajax({
+				url: '<c:url value="/search-dependencies" />',
+				dataType: "json",
+				data: { q: request.term },
+				success: function(data) {
+					response($.map(data.dependencies, function(item) {
+						return {
+							label: item.id,
+							value: item.safeId
+						};
+					}));
+				},
+				type: 'GET'
+			});
+		},
+		select: function(event, ui) {
+			$.ajax({
+				url: '<c:url value="/add-dependency/${fn:replace(name, \".\", \"/\")}" />',
+				dataType: "json",
+				data: { dependency: ui.item.label },
+				success: function() {
+					dependency.val('');
+					$("#dependencies").append("<div id=\"" + ui.item.value + "\">" + ui.item.label + " <input type='button' value='delete' onclick='removeDependency(\"" + ui.item.label + "\", \"" + ui.item.value + "\")' /></div>")
+					compile();
+				},
+				type: 'POST'
+			});
+			return false;
+		}
+	});
+});
+</script>
 <div>Source (last modified <fmt:formatDate pattern="yyyy-MM-dd hh:mm" value="${lastModified}" />)</div>
 <script>
+function removeDependency(dependencyToRemove, divId) {
+	$.ajax({
+		url: '<c:url value="/remove-dependency/${fn:replace(name, \".\", \"/\")}" />',
+		dataType: "json",
+		data: { dependency: dependencyToRemove },
+		success: function() {
+			$("#" + divId).remove();
+			compile();
+		},
+		type: 'POST'
+	});
+}
+
 function compile() {
 	var source = editor.getValue();
 	$.ajax({
 		url: '<c:url value="/compile-transformation/${fn:replace(name, \".\", \"/\")}" />',
 		dataType: "json",
-		data: { name: '${name}', source: source },
+		data: { source: source },
 		success: function(response) {
 			updateHints(response.errors);
 		},

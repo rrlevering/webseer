@@ -64,6 +64,14 @@ public class EditTransformation extends SeerServlet {
 		public void setVersion(String version) {
 			this.version = version;
 		}
+		
+		public String getId() {
+			return getGroup() + ":" + getName() + ":" + getVersion();
+		}
+		
+		public String getSafeId() {
+			return getGroup() + getName() + getVersion().replaceAll("\\.", "_");
+		}
 	}
 
 	@Override

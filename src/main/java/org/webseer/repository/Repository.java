@@ -1,20 +1,34 @@
 package org.webseer.repository;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.ws.rs.core.MediaType;
+
+import org.apache.archiva.rest.api.services.ArchivaRestServiceException;
+import org.apache.archiva.rest.api.services.SearchService;
+import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
+import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
 import org.sonatype.aether.AbstractRepositoryListener;
 import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.RepositoryException;
@@ -41,6 +55,10 @@ import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.webseer.model.meta.Library;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 public class Repository {
 
 	private static final Repository DEFAULT_INSTANCE = new Repository(new File("target/local-repo"));
@@ -55,7 +73,66 @@ public class Repository {
 	public Repository(File localCache) {
 		this.localRepo = new LocalRepository(localCache);
 
-		this.centralRepo = new RemoteRepository("central", "default", "http://localhost:2323/archiva/repository/internal/");
+		this.centralRepo = new RemoteRepository("central", "default",
+				"http://localhost:2323/repository/internal/");
+	}
+
+	public List<org.apache.archiva.maven2.model.Artifact> searchCentral(String query) {
+		try {
+			URL url = new URL("http://search.maven.org/solrsearch/select?q=" + URLEncoder.encode(query, "UTF-8")
+					+ "&rows=20&wt=json");
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", "application/json");
+
+			if (conn.getResponseCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+
+			List<org.apache.archiva.maven2.model.Artifact> artifacts = new ArrayList<>();
+
+			JsonParser parser = new JsonParser();
+			JsonObject responseWrapper = parser.parse(br).getAsJsonObject();
+
+			JsonObject response = responseWrapper.get("response").getAsJsonObject();
+
+			JsonArray docs = response.get("docs").getAsJsonArray();
+			for (int i = 0; i < docs.size(); i++) {
+				JsonObject artifact = docs.get(i).getAsJsonObject();
+
+				org.apache.archiva.maven2.model.Artifact parsed = new org.apache.archiva.maven2.model.Artifact(artifact
+						.get("g").getAsString(), artifact.get("a").getAsString(), artifact.get("latestVersion")
+						.getAsString());
+
+				artifacts.add(parsed);
+			}
+
+			conn.disconnect();
+
+			return artifacts;
+		} catch (IOException e) {
+			return new ArrayList<>();
+		}
+	}
+
+	public List<org.apache.archiva.maven2.model.Artifact> searchLocalArtifacts(String query) {
+		SearchService service = JAXRSClientFactory.create("http://localhost:2323/restServices/archivaServices/",
+				SearchService.class, Collections.singletonList(new JacksonJaxbJsonProvider()));
+
+		// to configure read timeout
+		WebClient.getConfig(service).getHttpConduit().getClient().setReceiveTimeout(100000000);
+		// if you want to use json as exchange format xml is supported too
+		WebClient.client(service).accept(MediaType.APPLICATION_JSON_TYPE);
+		WebClient.client(service).type(MediaType.APPLICATION_JSON_TYPE);
+
+		try {
+			return service.quickSearch(query);
+		} catch (ArchivaRestServiceException e) {
+			e.printStackTrace();
+			return Collections.emptyList();
+		}
 	}
 
 	public File getArtifact(Library library) throws RepositoryException {
@@ -71,18 +148,18 @@ public class Repository {
 
 		RepositorySystem system = newRepositorySystem();
 		DefaultRepositorySystemSession session = newRepositorySystemSession(system);
-		
+
 		ArtifactRequest artifactRequest = new ArtifactRequest(artifact, Arrays.asList(centralRepo), null);
-		
+
 		ArtifactResult result = system.resolveArtifact(session, artifactRequest);
 
 		if (!result.isResolved()) {
-			return null; 
+			return null;
 		}
-		
+
 		return result.getArtifact().getFile();
 	}
-	
+
 	public List<File> resolveArtifact(Library library) throws RepositoryException {
 		return resolveArtifact(library.getGroup(), library.getName(), library.getVersion());
 	}

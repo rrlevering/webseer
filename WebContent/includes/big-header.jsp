@@ -3,6 +3,7 @@
 <head>
 <title>webseer<%if (request.getParameter("title") != null) {%>: ${ param.title } (${ param.type })<%}%></title>
 <link href="<c:url value="/styles/webseer.css" />" rel="stylesheet" type="text/css" />
+<link href="<c:url value="/lib/jquery/jquery-ui.css" />" rel="stylesheet" type="text/css" />
 <script type="text/javascript" src="<c:url value="/lib/jquery/jquery.js" />"></script>
 <script type="text/javascript" src="<c:url value="/lib/jquery/jquery-ui.min.js" />"></script>
 </head>
