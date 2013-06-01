@@ -7,3 +7,5 @@ syntax: regexp
 ^bucketData$
 syntax: regexp
 ^target$
+syntax: regexp
+^src/main/resources/secret\.properties$
