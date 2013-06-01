@@ -47,6 +47,11 @@
 		<set name="transformationPath">$1</set>
 	</rule>
 	<rule>
+		<from>/upload-dependency/([^\?]+)$</from>
+		<to>/upload-dependency</to>
+		<set name="transformationPath">$1</set>
+	</rule>
+	<rule>
 		<from>/remove-dependency/([^\?]+)$</from>
 		<to>/remove-dependency</to>
 		<set name="transformationPath">$1</set>

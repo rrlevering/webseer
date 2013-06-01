@@ -91,6 +91,10 @@
     <servlet-class>org.webseer.web.ajax.CompileTransformation</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>upload-dependency</servlet-name>
+    <servlet-class>org.webseer.web.ajax.UploadDependency</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>add-dependency</servlet-name>
     <servlet-class>org.webseer.web.ajax.AddDependency</servlet-class>
   </servlet>
@@ -133,6 +137,10 @@
   <servlet-mapping>
     <servlet-name>add-dependency</servlet-name>
     <url-pattern>/add-dependency</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>upload-dependency</servlet-name>
+    <url-pattern>/upload-dependency</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>remove-dependency</servlet-name>

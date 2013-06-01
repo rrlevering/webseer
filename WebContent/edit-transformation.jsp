@@ -7,7 +7,6 @@
 <div style="font-weight:bold;margin:10 0 30 0">${name}</div>
 <jsp:useBean id="lastModified" class="java.util.Date" />
 <jsp:setProperty name="lastModified" property="time" value="${version}" />
-<form method="post">
 <div id="dependencies">Dependencies:
 	<c:forEach var="dependency" items="${dependencies}" varStatus="loop">
 		<div id="${dependency.safeId}">${dependency.id} <input type="button" value="delete" onclick="removeDependency('${dependency.id}', '${dependency.safeId}')" /></div>
@@ -21,7 +20,19 @@
     overflow-x: hidden;
    }
 </style>
-<input id="dependency" type="text" style="width:300px" name="newDependency" />
+<div style="margin-bottom:10px">
+	Search: <input id="dependency" type="text" style="width:300px" name="newDependency" /> or <input type="button" value="Upload" onclick="uploadNewDependency()"/>
+</div>
+<div id="uploadDependency" title="Upload Dependency">
+<form name="uploadForm" id="uploadForm">
+<table>
+Uploaded archives will be registered with a group name of your login email.
+<tr><td>Library name:</td><td><input type="text" name="artifactId" /></td></tr>
+<tr><td>Version:</td><td><input type="text" name="version" /></td></tr>
+<tr><td>File:</td><td><input type="file" name="uploadedJar" accept="application/java-archive" id="uploadedJar" /></td></tr>
+</table>
+</form>
+</div>
 <script>
 $(function() {
 	var dependency = $('#dependency');
@@ -52,7 +63,7 @@ $(function() {
 				data: { dependency: ui.item.label },
 				success: function() {
 					dependency.val('');
-					$("#dependencies").append("<div id=\"" + ui.item.value + "\">" + ui.item.label + " <input type='button' value='delete' onclick='removeDependency(\"" + ui.item.label + "\", \"" + ui.item.value + "\")' /></div>")
+					$("#dependencies").append("<div id=\"" + ui.item.value + "\">" + ui.item.label + " <input type='button' value='delete' onclick='removeDependency(\"" + ui.item.label + "\", \"" + ui.item.value + "\")' /></div>");
 					compile();
 				},
 				type: 'POST'
@@ -60,10 +71,47 @@ $(function() {
 			return false;
 		}
 	});
+	
+	$( "#uploadDependency" ).dialog({
+	      autoOpen: false,
+	      height: 300,
+	      width: 500,
+	      modal: true,
+	      buttons: {
+	          "Create library": function() {
+					var formData = new FormData($("#uploadForm")[0]);
+					$.ajax({
+							url: '<c:url value="/upload-dependency/${fn:replace(name, \".\", \"/\")}" />',
+							dataType: "json",
+							success: function(dependency) {
+								$("#dependencies").append("<div id=\"" + dependency.safeId + "\">" + dependency.id + " <input type='button' value='delete' onclick='removeDependency(\"" + dependency.id + "\", \"" + dependency.safeId + "\")' /></div>");
+								compile();
+							},
+							error: function(xhr, error, thrown) {
+	                            alert(thrown);
+	                        },
+							data: formData,
+							type: 'POST',
+							cache: false,
+	                        contentType: false,
+	                        processData: false
+						});
+ 					$( this ).dialog( "close" );
+	            },
+	          Cancel: function() {
+	            $( this ).dialog( "close" );
+	          }
+	        },
+	    });
 });
 </script>
+<form method="post">
 <div>Source (last modified <fmt:formatDate pattern="yyyy-MM-dd hh:mm" value="${lastModified}" />)</div>
 <script>
+function uploadNewDependency() {
+	$( "#uploadDependency" ).dialog( "open" );
+}
+
 function removeDependency(dependencyToRemove, divId) {
 	$.ajax({
 		url: '<c:url value="/remove-dependency/${fn:replace(name, \".\", \"/\")}" />',

@@ -3,6 +3,7 @@ package org.webseer.repository;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
@@ -24,6 +25,17 @@ import org.apache.archiva.rest.api.services.ArchivaRestServiceException;
 import org.apache.archiva.rest.api.services.SearchService;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.wagon.Wagon;
@@ -54,6 +66,7 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.webseer.model.meta.Library;
+import org.webseer.util.WebseerConfiguration;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -438,5 +451,38 @@ public class Repository {
 			return (bytes + 1023) / 1024;
 		}
 
+	}
+
+	public void uploadArtifact(String group, String name, String version, InputStream fileStream) throws RepositoryException {
+		String archivaUsername = WebseerConfiguration.getConfiguration().getString("ARCHIVA_USER");
+		String archivaPassword = WebseerConfiguration.getConfiguration().getString("ARCHIVA_PASSWORD");
+
+		CredentialsProvider credsProvider = new BasicCredentialsProvider();
+		credsProvider.setCredentials(new AuthScope("localhost", 2323), new UsernamePasswordCredentials(archivaUsername,
+				archivaPassword));
+		HttpClient client = HttpClientBuilder.create()
+				.setRetryHandler(new DefaultHttpRequestRetryHandler(0, false))
+				.setDefaultCredentialsProvider(credsProvider).build();
+
+		HttpPut put = new HttpPut("http://localhost:2323/repository/internal/" + group + "/" + name + "/" + version
+				+ "/" + name + "-" + version + ".jar");
+		BufferedHttpEntity requestEntity;
+		try {
+			requestEntity = new BufferedHttpEntity(new InputStreamEntity(fileStream));
+		} catch (IOException e) {
+			throw new RepositoryException("Unable to upload archive", e);
+		}
+		put.setEntity(requestEntity);
+
+		HttpResponse response;
+		try {
+			response = client.execute(put);
+		} catch (IOException e) {
+			throw new RepositoryException("Unable to upload archive", e);
+		}
+		
+		if (response.getStatusLine().getStatusCode() != 201) {
+			throw new RepositoryException("Unable to upload archive, got " + response.getStatusLine().getStatusCode() + " code");
+		}
 	}
 }

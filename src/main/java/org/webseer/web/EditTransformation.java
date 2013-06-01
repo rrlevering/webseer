@@ -70,7 +70,7 @@ public class EditTransformation extends SeerServlet {
 		}
 		
 		public String getSafeId() {
-			return getGroup() + getName() + getVersion().replaceAll("\\.", "_");
+			return (getGroup() + getName() + getVersion()).replaceAll("\\.", "_");
 		}
 	}
 

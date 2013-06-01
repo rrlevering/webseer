@@ -43,7 +43,7 @@ public class SearchDependencies extends SeerServlet {
 			if (artifactsSet.contains(artifact.getGroupId() + ":" + artifact.getArtifactId())) {
 				continue;
 			}
-			String safeId = artifact.getGroupId() + artifact.getArtifactId() + artifact.getVersion().replaceAll("\\.", "_");
+			String safeId = (artifact.getGroupId() + artifact.getArtifactId() + artifact.getVersion()).replaceAll("\\.", "_");
 			artifactsSet.add(artifact.getGroupId() + ":" + artifact.getArtifactId());
 			JsonObject artifactObject = new JsonObject();
 			artifactObject.add("id", new JsonPrimitive(id));
@@ -55,7 +55,7 @@ public class SearchDependencies extends SeerServlet {
 			if (artifactsSet.contains(artifact.getGroupId() + ":" + artifact.getArtifactId())) {
 				continue;
 			}
-			String safeId = artifact.getGroupId() + artifact.getArtifactId() + artifact.getVersion().replaceAll("\\.", "_");
+			String safeId = (artifact.getGroupId() + artifact.getArtifactId() + artifact.getVersion()).replaceAll("\\.", "_");
 			artifactsSet.add(artifact.getGroupId() + ":" + artifact.getArtifactId());
 			JsonObject artifactObject = new JsonObject();
 			artifactObject.add("id", new JsonPrimitive(id));
