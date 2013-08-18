@@ -19,11 +19,12 @@ import org.webseer.streams.io.BucketIO;
 import org.webseer.streams.io.bucket.RandomAccessBucketIO;
 import org.webseer.streams.model.trace.Bucket;
 import org.webseer.streams.model.trace.HasValue;
+import org.webseer.type.DataType;
 import org.webseer.type.TypeFactory;
 
 import com.google.protobuf.ByteString;
 
-public class Type {
+public class Type implements DataType {
 
 	public static BucketIO reader = new RandomAccessBucketIO();
 

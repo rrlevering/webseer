@@ -30,7 +30,7 @@ public interface PullRuntimeTransformation {
 	/**
 	 * Adds an output point that the function can write to.
 	 */
-	public void addOutputChannel(String outputPoint, OutputWriter<?> writer);
+	public void addOutputChannel(String outputPoint, OutputWriter writer);
 
 	/**
 	 * Adds an input point whereby the transformation can pull from when transform is run.

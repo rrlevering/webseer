@@ -410,7 +410,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 		}
 
 		@Override
-		public ItemInputStream getInputStream() {
+		public ItemInputStream iterator() {
 
 			return new ItemInputStream(getViews(), null, new InputGroupGetter() {
 
@@ -484,7 +484,7 @@ public class RuntimeConfigurationImpl implements RuntimeConfiguration {
 		}
 
 		@Override
-		public ItemInputStream getInputStream() {
+		public ItemInputStream iterator() {
 			return new ItemInputStream(getViews(), targetType, new InputGroupGetter() {
 
 				@Override

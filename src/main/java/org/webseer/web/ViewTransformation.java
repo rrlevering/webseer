@@ -49,7 +49,6 @@ public class ViewTransformation extends SeerServlet {
 		RequestDispatcher rd = request.getRequestDispatcher("transformation.jsp");
 		rd.forward(request, response);
 	}
-
 	
 	@Override
 	protected void transactionalizedPost(HttpServletRequest request,
@@ -61,8 +60,7 @@ public class ViewTransformation extends SeerServlet {
 
 		JavaTransformation transformation = (JavaTransformation) factory.getLatestTransformationByName(transformationName);
 
-		System.out.println("Got transformation " + transformation + " from " + factory);
-		Map<String, Object> inputs = new HashMap<String, Object>();
+		Map<String, String> inputs = new HashMap<String, String>();
 		
 		PullRuntimeTransformation runtimeTransformation;
 		try {
@@ -70,21 +68,19 @@ public class ViewTransformation extends SeerServlet {
 
 			for (InputPoint input : transformation.getInputPoints()) {
 				String serialized = request.getParameter(input.getName());
-				// Convert to correct type from string representation
-				Object inputObject = input.getType().fromString(serialized);
-				inputs.put(input.getName(), inputObject);
-				runtimeTransformation.addInputChannel(input.getName(), InputReaders.getInputReader(inputObject));
+				inputs.put(input.getName(), serialized);
+				runtimeTransformation.addInputChannel(input.getName(), InputReaders.getInputReader(serialized));
 			}
 		} catch (TransformationException e) {
 			// This is an application error, there shouldn't be a mismatch here
 			throw new IllegalStateException("Input points in runtime transformation should match transformation", e);
 		}
 
-		Map<String, List<Object>> outputs = new HashMap<String, List<Object>>();
+		Map<String, List<String>> outputs = new HashMap<String, List<String>>();
 
 		for (OutputPoint output : transformation.getOutputPoints()) {
-			List<Object> collector = new ArrayList<Object>();
-			runtimeTransformation.addOutputChannel(output.getName(), OutputWriters.getOutputWriter(collector));
+			List<String> collector = new ArrayList<String>();
+			runtimeTransformation.addOutputChannel(output.getName(), OutputWriters.getStringWriter(collector));
 			outputs.put(output.getName(), collector);
 		}
 

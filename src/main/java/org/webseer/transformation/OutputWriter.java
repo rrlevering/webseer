@@ -1,7 +1,9 @@
 package org.webseer.transformation;
 
-public interface OutputWriter<T> {
+import org.webseer.bucket.Data;
 
-	public void writeObject(T o);
+public interface OutputWriter {
+
+	public void writeData(Data data);
 	
 }

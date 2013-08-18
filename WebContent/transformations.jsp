@@ -5,13 +5,14 @@
 </jsp:include>
 <div class="frontDiv">
 	<div class="title">Transformations</div>
-	<table class="wsTable" cellpadding="0" cellspacing="0">
+	<table class="wsTable">
 		<tr>
-			<th width="400">transformation</th>
+			<th width="400">data</th>
 		</tr>
 		<c:forEach var="transformation" items="${transformations}" varStatus="loop">
 			<tr${((loop.index % 2) == 0) ? '' : ' class="alternate"'}>
-			<td><a href="transformation/${fn:replace(transformation.name, ".", "/")}">${transformation.name}</a></td>
+			<td><a href="transformation/${fn:replace(transformation.name, '.', '/')}">${transformation.name}</a></td>
+			<td><a href="transformation/${fn:replace(transformation.name, '.', '/')}">${transformation.name}</a></td>
 			</tr>
 		</c:forEach>
 	</table>

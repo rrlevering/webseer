@@ -3,11 +3,12 @@ package org.webseer.streams.model.runtime;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.webseer.bucket.Data;
 import org.webseer.streams.model.runtime.RuntimeConfigurationImpl.OutputGroupGetter;
 import org.webseer.streams.model.trace.DataItem;
 import org.webseer.transformation.OutputWriter;
 
-public class ItemOutputStream<T> extends OutputStream implements OutputWriter<T> {
+public class ItemOutputStream extends OutputStream implements OutputWriter {
 
 	private final OutputGroupGetter groupGetter;
 
@@ -64,9 +65,9 @@ public class ItemOutputStream<T> extends OutputStream implements OutputWriter<T>
 		currentItem = new DataItem(this.groupGetter.getNeoService(), this.groupGetter.getOutputGroup());
 	}
 
-	public void writeObject(T o) {
+	public void writeData(Data data) {
 		startNewItem();
-		currentItem.getType().setValue(currentItem, o);
+		currentItem.getType().setValue(currentItem, data);
 	}
 
 }

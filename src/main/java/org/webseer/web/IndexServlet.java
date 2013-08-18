@@ -10,8 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.webseer.bucket.BucketFactory;
+import org.webseer.model.meta.Bucket;
 import org.webseer.model.meta.Transformation;
 import org.webseer.transformation.TransformationFactory;
+import org.webseer.web.beans.BucketBean;
 import org.webseer.web.beans.TransformationBean;
 import org.webseer.web.beans.UserBean;
 
@@ -53,6 +56,17 @@ public class IndexServlet extends SeerServlet {
 		}
 		request.setAttribute("newTransformationName", testName);
 		
+		BucketFactory bucketFactory = BucketFactory.getBucketFactory(service);
+		Iterable<Bucket> buckets = bucketFactory.getAllBuckets();
+		List<BucketBean> ownedBuckets = new ArrayList<BucketBean>();
+		
+		for (Bucket bucket : buckets) {
+			if (currentUser != null && currentUser.getLogin().equals(bucket.getOwner())) {
+				ownedBuckets.add(new BucketBean(bucket));
+			}
+		}
+		request.setAttribute("ownedBuckets", ownedBuckets);
+
 		RequestDispatcher rd = request.getRequestDispatcher("index.jsp");
 		rd.forward(request, response);
 	}

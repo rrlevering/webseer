@@ -2,8 +2,10 @@ package org.webseer.transformation;
 
 import java.util.Iterator;
 
-public interface InputReader {
+import org.webseer.bucket.Data;
 
-	Iterator<Object> getInputStream();
+public interface InputReader extends Iterable<Data> {
+	
+	public Iterator<Data> iterator();
 
 }

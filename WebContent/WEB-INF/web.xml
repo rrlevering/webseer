@@ -31,6 +31,8 @@
     <url-pattern>/transformation/*</url-pattern>
     <url-pattern>/edit-transformation/*</url-pattern>
     <url-pattern>/compile-transformation/*</url-pattern>
+    <url-pattern>/edit-bucket/*</url-pattern>
+     <url-pattern>/bucket/*</url-pattern>
   </filter-mapping>
   <filter-mapping>
     <filter-name>UrlRewriteFilter</filter-name>
@@ -65,6 +67,14 @@
   <servlet>
     <servlet-name>edit-transformation</servlet-name>
     <servlet-class>org.webseer.web.EditTransformation</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>bucket</servlet-name>
+    <servlet-class>org.webseer.web.ViewBucket</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>edit-bucket</servlet-name>
+    <servlet-class>org.webseer.web.EditBucket</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>edit-workspace</servlet-name>
@@ -155,8 +165,16 @@
     <url-pattern>/transformation</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
+    <servlet-name>bucket</servlet-name>
+    <url-pattern>/bucket</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
     <servlet-name>edit-transformation</servlet-name>
     <url-pattern>/edit-transformation</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>edit-bucket</servlet-name>
+    <url-pattern>/edit-bucket</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>render-node</servlet-name>

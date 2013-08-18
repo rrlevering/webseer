@@ -12,11 +12,6 @@
 		<set name="workspaceId">$1</set>
 	</rule>
 	<rule>
-		<from>/bucket/([0-9]+)/([^/?]+)(\?.*|$)</from>
-		<to>/$2-workspace-bucket$3</to>
-		<set name="bucketId">$1</set>
-	</rule>
-	<rule>
 		<from>/program/([0-9]+)/([^/?]+)(\?.*|$)</from>
 		<to>/$2-program$3</to>
 		<set name="programId">$1</set>
@@ -37,6 +32,11 @@
 		<set name="transformationPath">$1</set>
 	</rule>
 	<rule>
+		<from>/edit-bucket/([^\?]+)$</from>
+		<to>/edit-bucket</to>
+		<set name="bucketPath">$1</set>
+	</rule>
+	<rule>
 		<from>/compile-transformation/([^\?]+)$</from>
 		<to>/compile-transformation</to>
 		<set name="transformationPath">$1</set>
@@ -55,6 +55,11 @@
 		<from>/remove-dependency/([^\?]+)$</from>
 		<to>/remove-dependency</to>
 		<set name="transformationPath">$1</set>
+	</rule>
+	<rule>
+		<from>/bucket/([^\?]+)$</from>
+		<to>/bucket</to>
+		<set name="bucketPath">$1</set>
 	</rule>
 	<rule>
 		<from>/transformation/([^\?]+)$</from>

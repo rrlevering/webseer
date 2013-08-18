@@ -3,10 +3,10 @@ package org.webseer.java;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.webseer.bucket.Data;
 import org.webseer.model.meta.InputPoint;
 import org.webseer.model.meta.Transformation;
 import org.webseer.model.meta.TransformationException;
@@ -29,7 +29,6 @@ public class MethodTransformation extends JavaPullTransformation {
 		this.transformation = transformation;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean transform() throws TransformationException, RuntimeTransformationException {
 		// Start new transformation group
@@ -48,18 +47,11 @@ public class MethodTransformation extends JavaPullTransformation {
 			
 			if (param.isAssignableFrom(Iterable.class)) {
 				log.info("Adding iterable input for {}", inputPoint.getName());
-				arguments[i] = new Iterable<Object>() {
-
-					@Override
-					public Iterator<Object> iterator() {
-						return reader.getInputStream();
-					}
-					
-				};
+				arguments[i] = JavaTypeTranslator.convertData(reader, param);
 			} else {
-				Object inputObject = reader.getInputStream().next();
+				Data inputObject = reader.iterator().next();
 				log.info("Input for {} = {}", inputPoint.getName(), inputObject);
-				arguments[i] = inputObject;
+				arguments[i] = JavaTypeTranslator.convertData(inputObject, param);
 			}
 			i++;
 		}
@@ -87,15 +79,14 @@ public class MethodTransformation extends JavaPullTransformation {
 
 		// Add the return value to output listeners
 		if (returnValue != null) {
-			@SuppressWarnings("rawtypes")
 			OutputWriter valueList = outputs.get("return");
 			if (valueList != null) {
 				if (returnValue instanceof Iterable) {
 					for (Object object : ((Iterable<?>) returnValue)) {
-						valueList.writeObject(object);
+						valueList.writeData(JavaTypeTranslator.convertObject(object));
 					}
 				} else if (!(returnValue instanceof OutputStream)) {
-					valueList.writeObject(returnValue);
+					valueList.writeData(JavaTypeTranslator.convertObject(returnValue));
 				}
 			}
 		}

@@ -21,7 +21,7 @@ public abstract class JavaPullTransformation implements PullRuntimeTransformatio
 
 	protected final Map<String, InputReader> readers = new HashMap<String, InputReader>();
 
-	protected final Map<String, OutputWriter<?>> outputs = new HashMap<String, OutputWriter<?>>();
+	protected final Map<String, OutputWriter> outputs = new HashMap<String, OutputWriter>();
 
 	protected final List<TransformationListener> listeners = Lists.newArrayList();
 
@@ -33,7 +33,7 @@ public abstract class JavaPullTransformation implements PullRuntimeTransformatio
 	}
 
 	@Override
-	public void addOutputChannel(String outputPoint, OutputWriter<?> output) {
+	public void addOutputChannel(String outputPoint, OutputWriter output) {
 		outputs.put(outputPoint, output);
 	}
 

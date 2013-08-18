@@ -63,7 +63,6 @@ import org.webseer.model.meta.TransformationException;
 import org.webseer.model.meta.Type;
 import org.webseer.repository.Repository;
 import org.webseer.transformation.LanguageTransformationFactory;
-import org.webseer.transformation.OutputWriter;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.Descriptor;
@@ -182,7 +181,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 		if (compiledClasses.isEmpty()) {
 			throw new CompilationFailedException(diagnostics.getDiagnostics());
 		}
-		
+
 		String firstClass = compiledClasses.get(0);
 
 		try {
@@ -366,6 +365,8 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 					return InputChannel.class;
 				} else if (name.equals(OutputChannel.class.getName())) {
 					return OutputChannel.class;
+				} else if (name.equals(OutputWriter.class.getName())) {
+					return OutputWriter.class;
 				}
 				return super.loadClass(name); // Allow any class to be loaded
 			}
@@ -549,7 +550,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 		if (qualifiedName == null || qualifiedName.isEmpty()) {
 			throw new TransformationException("No transformation name specified");
 		}
-		
+
 		GraphDatabaseService service = Neo4JMetaUtils.getNode(wrapperSource).getGraphDatabase();
 
 		String code = wrapperSource.getCode();
@@ -560,7 +561,7 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 		} catch (CompilationFailedException e) {
 			throw new TransformationException(e);
 		}
-		
+
 		Transformation trans = new JavaTransformation(service, qualifiedName, wrapperSource);
 		for (Library library : dependencies) {
 			Neo4JMetaUtils.getNode(trans).createRelationshipTo(Neo4JMetaUtils.getNode(library),
@@ -614,7 +615,8 @@ public class JavaRuntimeFactory implements LanguageTransformationFactory {
 				throw new TransformationException("Unsupported generic type: " + rawType);
 			}
 			Class<?> rawClass = (Class<?>) rawType;
-			if (!Iterable.class.isAssignableFrom(rawClass) && !Iterator.class.isAssignableFrom(rawClass)) {
+			if (!Iterable.class.isAssignableFrom(rawClass) && !Iterator.class.isAssignableFrom(rawClass)
+					&& !OutputWriter.class.isAssignableFrom(rawClass)) {
 				throw new TransformationException("Unsupported generic type: " + rawType);
 			}
 			// Repeated of the generic type

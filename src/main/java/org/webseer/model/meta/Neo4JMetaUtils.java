@@ -4,6 +4,10 @@ import org.neo4j.graphdb.Node;
 
 public class Neo4JMetaUtils {
 
+	public final static Node getNode(Bucket bucket) {
+		return bucket.getUnderlyingNode();
+	}
+
 	public final static Node getNode(Transformation transformation) {
 		return transformation.getUnderlyingNode();
 	}
